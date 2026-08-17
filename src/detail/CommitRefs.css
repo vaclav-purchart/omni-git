@@ -1,0 +1,14 @@
+/* One line above the file list, and only when the commit actually has refs — the
+   panel is narrow and this is a label strip, not a section.
+
+   The badge styling itself is shared with the railway (see CommitRailway.css):
+   the same ref should look the same wherever it appears. */
+.commit-refs-row {
+	flex: none;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+	padding: 6px 12px;
+	border-bottom: 1px solid var(--border);
+}

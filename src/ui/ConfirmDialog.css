@@ -1,0 +1,89 @@
+.confirm-overlay {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.45);
+	z-index: 1000;
+}
+.confirm-dialog {
+	width: min(360px, calc(100vw - 32px));
+	background: var(--surface);
+	color: var(--fg);
+	border: 1px solid var(--border);
+	border-radius: 10px;
+	box-shadow: var(--shadow-md);
+	padding: 16px;
+}
+.confirm-message {
+	margin: 0 0 16px;
+	font-size: 13px;
+	line-height: 1.5;
+	word-break: break-word;
+}
+.confirm-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+.confirm-cancel {
+	height: 30px;
+	padding: 0 12px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--surface);
+	color: var(--fg);
+}
+.confirm-cancel:hover {
+	background: var(--surface-hover);
+}
+.confirm-danger {
+	height: 30px;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 0 12px;
+	border: 1px solid var(--danger-border);
+	border-radius: 6px;
+	background: var(--danger-bg);
+	color: var(--danger-fg);
+}
+.confirm-danger:hover {
+	filter: brightness(1.05);
+}
+
+/* PromptDialog: one text field, e.g. a new branch name. */
+.confirm-input {
+	width: 100%;
+	margin: 4px 0 0;
+	padding: 5px 8px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 12px;
+}
+.confirm-input:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+/* Non-destructive confirm, so accent rather than the danger colour used by
+   ConfirmDialog's delete/discard button. */
+.confirm-primary {
+	padding: 4px 12px;
+	border: 1px solid var(--accent);
+	border-radius: 6px;
+	background: var(--accent);
+	color: var(--accent-fg);
+	font-size: 12px;
+	font-weight: 600;
+}
+.confirm-primary:hover:not(:disabled) {
+	filter: brightness(1.08);
+}
+.confirm-primary:disabled {
+	opacity: 0.45;
+	cursor: default;
+}

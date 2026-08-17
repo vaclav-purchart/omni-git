@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Railway"
+       Two parallel lanes with a branch spurring off the trunk: the app's own
+       commit graph. The lanes are kept straight and parallel — an earlier
+       version curved them into a closed lens, which at 32px read as a play
+       button. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232936"/>
+      <stop offset="1" stop-color="#12151b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+
+  <!-- Branch: spurs off the trunk and runs its own lane to the bottom. -->
+  <path d="M 360 420 C 360 560, 664 500, 664 640 L 664 780"
+        fill="none" stroke="#22c55e" stroke-width="60" stroke-linecap="round"/>
+
+  <!-- Trunk, top to bottom. -->
+  <line x1="360" y1="244" x2="360" y2="780" stroke="#3b82f6" stroke-width="60" stroke-linecap="round"/>
+
+  <!-- Commits down the trunk, plus the branch tip. -->
+  <circle cx="360" cy="244" r="92" fill="#12151b"/>
+  <circle cx="360" cy="244" r="62" fill="#3b82f6"/>
+  <circle cx="360" cy="780" r="92" fill="#12151b"/>
+  <circle cx="360" cy="780" r="62" fill="#3b82f6"/>
+  <circle cx="664" cy="780" r="92" fill="#12151b"/>
+  <circle cx="664" cy="780" r="62" fill="#22c55e"/>
+</svg>

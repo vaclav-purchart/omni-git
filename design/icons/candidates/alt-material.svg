@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Material"
+       The two-lane railway unchanged, but built rather than drawn: lit strokes,
+       a cast shadow, specular highlights on the commits. The extra interest comes
+       from the surface, so nothing has to be added to the diagram. -->
+  <defs>
+    <linearGradient id="bg" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#2b3244"/><stop offset="0.6" stop-color="#171b24"/><stop offset="1" stop-color="#0e1117"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/><stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <!-- User-space, not objectBoundingBox: the trunk is a straight vertical
+         line, whose bounding box has zero width, and a bbox gradient on it is
+         undefined — resvg drops the stroke entirely. -->
+    <linearGradient id="blue" gradientUnits="userSpaceOnUse" x1="372" y1="212" x2="372" y2="828">
+      <stop offset="0" stop-color="#7dabfb"/><stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="green" gradientUnits="userSpaceOnUse" x1="372" y1="400" x2="652" y2="740">
+      <stop offset="0" stop-color="#5ee08b"/><stop offset="1" stop-color="#16a34a"/>
+    </linearGradient>
+    <radialGradient id="nodeBlue" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#93bbfd"/><stop offset="1" stop-color="#2563eb"/>
+    </radialGradient>
+    <radialGradient id="nodeGreen" cx="0.35" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#6ee7a0"/><stop offset="1" stop-color="#15a34a"/>
+    </radialGradient>
+    <filter id="cast" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <rect x="6" y="6" width="1012" height="1012" rx="218" fill="none" stroke="url(#rim)" stroke-width="12"/>
+
+  <g filter="url(#cast)">
+    <path d="M 372 400 C 372 540 652 480 652 620 L 652 740"
+          fill="none" stroke="url(#green)" stroke-width="64" stroke-linecap="round"/>
+    <path d="M 372 300 L 372 740" fill="none" stroke="url(#blue)" stroke-width="64" stroke-linecap="round"/>
+    <circle cx="372" cy="300" r="88" fill="url(#nodeBlue)"/>
+    <circle cx="372" cy="740" r="88" fill="url(#nodeBlue)"/>
+    <circle cx="652" cy="740" r="88" fill="url(#nodeGreen)"/>
+  </g>
+  <g fill="#ffffff" opacity="0.35">
+    <ellipse cx="352" cy="268" rx="34" ry="22" transform="rotate(-30 352 268)"/>
+    <ellipse cx="352" cy="708" rx="34" ry="22" transform="rotate(-30 352 708)"/>
+    <ellipse cx="632" cy="708" rx="34" ry="22" transform="rotate(-30 632 708)"/>
+  </g>
+</svg>

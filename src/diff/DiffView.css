@@ -1,0 +1,154 @@
+.diff-view {
+	height: 100%;
+	overflow: hidden;
+	background: var(--surface);
+	display: flex;
+	flex-direction: column;
+}
+.diff-header {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--border);
+	font-family: ui-monospace, "SF Mono", Menlo, monospace;
+	font-size: 12px;
+}
+.diff-header-path {
+	flex: 1;
+	min-width: 0;
+	color: var(--fg);
+}
+.diff-header-stats {
+	flex: none;
+	display: flex;
+	gap: 8px;
+	font-variant-numeric: tabular-nums;
+}
+.diff-ws-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	flex: none;
+	padding: 2px 8px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: none;
+	color: var(--muted);
+	font-size: 11px;
+	white-space: nowrap;
+}
+.diff-ws-toggle:hover {
+	background: var(--surface-hover);
+}
+.diff-ws-toggle.is-on {
+	color: var(--accent);
+	border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.diff-stat-add {
+	color: var(--added);
+}
+.diff-stat-del {
+	color: var(--danger-fg);
+}
+/* Folded git preamble, between the file header and the changes. */
+.diff-meta {
+	flex: none;
+	border-bottom: 1px solid var(--border);
+	background: var(--bg);
+}
+.diff-meta-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	width: 100%;
+	padding: 3px 10px;
+	border: none;
+	background: none;
+	color: var(--muted);
+	font-size: 11px;
+	text-align: left;
+}
+.diff-meta-toggle:hover {
+	color: var(--fg);
+}
+.diff-meta-body {
+	margin: 0;
+	padding: 4px 10px 8px;
+	/* Bounded: a rename patch's preamble can run long, and this is reference
+	   material, not the thing being read. */
+	max-height: 10em;
+	overflow: auto;
+	color: var(--muted);
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 11px;
+	line-height: 1.5;
+	white-space: pre;
+	user-select: text;
+}
+.diff-body {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+/* @uiw/react-codemirror renders a wrapper div (this class) around .cm-editor.
+   It must fill the body, otherwise the editor grows with content and nothing
+   scrolls internally (so no scrollbar). */
+.diff-cm {
+	height: 100%;
+	overflow: hidden;
+}
+.diff-body .cm-editor {
+	height: 100%;
+}
+.diff-empty {
+	display: flex;
+	/* Column so the binary-file notice reads explanation → action → why, top to
+	   bottom, instead of as one run-on line. justify-content still centres it. */
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	height: 100%;
+	padding: 0 24px;
+	text-align: center;
+	color: var(--muted);
+}
+.cm-diff-add {
+	background: var(--diff-add-bg);
+	box-shadow: inset 2px 0 0 var(--added);
+}
+.cm-diff-del {
+	background: var(--diff-del-bg);
+	box-shadow: inset 2px 0 0 var(--danger-fg);
+}
+.cm-diff-hunk {
+	background: var(--surface-hover);
+	color: var(--muted);
+}
+.cm-diff-meta {
+	color: var(--muted);
+}
+
+.diff-show-text {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 3px 10px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: var(--surface);
+	color: var(--fg);
+	font-size: 12px;
+}
+.diff-show-text:hover {
+	background: var(--surface-hover);
+}
+.diff-empty-hint {
+	max-width: 42ch;
+	color: var(--muted);
+	font-size: 11px;
+	line-height: 1.5;
+}

@@ -1,0 +1,100 @@
+/* Full-width inline "second line" below the header row — normal flow, no
+   overlay/clip, sized by its own content instead of a fixed dropdown width. */
+.filter-panel {
+	border-bottom: 1px solid var(--border);
+	padding: 8px 12px;
+	background: var(--surface);
+}
+.filter-add-row {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 6px;
+}
+.filter-add-input {
+	flex: 1;
+	min-width: 0;
+	padding: 3px 6px;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	background: none;
+	color: inherit;
+	font-size: 12px;
+}
+.filter-add-mode {
+	flex: none;
+	padding: 3px 4px;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	background: var(--surface);
+	color: inherit;
+	font-size: 12px;
+}
+.filter-add-btn {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 3px 8px;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	background: none;
+	color: var(--accent);
+	font-size: 12px;
+}
+.filter-add-btn:hover:not(:disabled) {
+	background: var(--surface-hover);
+}
+.filter-add-btn:disabled {
+	color: var(--muted);
+	opacity: 0.5;
+}
+.filter-empty-hint {
+	padding: 6px 2px;
+	color: var(--muted);
+	font-size: 11px;
+}
+.filter-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	max-height: 200px;
+	overflow-y: auto;
+}
+.filter-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 2px;
+}
+.filter-pattern {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-family: ui-monospace, monospace;
+	font-size: 12px;
+}
+.filter-row select {
+	flex: none;
+	padding: 2px 4px;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	background: var(--surface);
+	color: inherit;
+	font-size: 11px;
+}
+.filter-remove-btn {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	padding: 0 4px;
+	border: none;
+	background: none;
+	color: var(--muted);
+	font-size: 12px;
+}
+.filter-remove-btn:hover {
+	color: var(--danger-fg);
+}

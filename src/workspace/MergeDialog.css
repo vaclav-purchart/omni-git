@@ -1,0 +1,12 @@
+.merge-dialog {
+	min-width: 460px;
+	max-width: 560px;
+}
+/* The branch picker gets its own block above the modes: which branch is the
+   question, the mode is only how the answer lands. */
+.merge-target {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-top: 10px;
+}

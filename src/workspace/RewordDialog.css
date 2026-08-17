@@ -1,0 +1,61 @@
+/* Wider than a plain confirm: the box holds a full commit message, subject and
+   body, and wrapping a body into a narrow column makes it unreadable. */
+.reword-dialog {
+	min-width: 520px;
+	max-width: 640px;
+}
+.reword-dialog code {
+	padding: 0 4px;
+	border-radius: 4px;
+	background: var(--bg);
+	font-size: 11px;
+}
+
+/* The consequence of rewording an older commit only shows up much later, when a
+   push is rejected — so it gets the danger treatment here, at the one moment the
+   user can still decide otherwise. */
+.reword-warning {
+	margin: 8px 0 0;
+	padding: 8px 10px;
+	border-radius: 6px;
+	background: var(--danger-bg);
+	color: var(--danger-fg);
+	font-size: 11px;
+	line-height: 1.45;
+}
+
+.reword-field {
+	display: block;
+	margin-top: 10px;
+}
+.reword-label {
+	display: block;
+	margin-bottom: 4px;
+	color: var(--muted);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.reword-input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 8px 10px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--bg);
+	color: var(--fg);
+	/* Monospace, like the commit box: messages are wrapped by hand at a column
+	   count, and a proportional font hides where those wraps fall. */
+	font-family: ui-monospace, "SF Mono", Menlo, monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	resize: vertical;
+}
+.reword-input:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+.reword-input:disabled {
+	color: var(--muted);
+}

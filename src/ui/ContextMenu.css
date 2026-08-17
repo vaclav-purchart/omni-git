@@ -1,0 +1,68 @@
+.context-menu {
+	position: fixed;
+	z-index: 1000;
+	min-width: 200px;
+	padding: 4px 0;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	box-shadow: var(--shadow-md);
+}
+.context-menu-item {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	gap: 0.5em;
+	padding: 4px 12px;
+	background: none;
+	border: none;
+	color: var(--fg);
+	text-align: left;
+	font-size: 13px;
+}
+/* The active item, however it became active. Hovering moves focus (see
+   ContextMenu.tsx), so :focus covers both the pointer and the arrow keys and the
+   two can never disagree.
+
+   :focus, not :focus-visible — a menu opened by right-click has a focused item
+   from the start, and :focus-visible would leave it looking inert until the user
+   happened to press a key. */
+.context-menu-item:focus,
+.context-menu-item:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--accent) 16%, transparent);
+	outline: none;
+}
+/* A dangerous item stays red when active: the highlight must not be the only
+   thing the eye lands on. */
+.context-menu-item.is-danger:focus,
+.context-menu-item.is-danger:hover:not(:disabled) {
+	background: var(--danger-bg);
+}
+.context-menu-item.is-danger {
+	color: var(--danger-fg);
+}
+.context-menu-item:disabled {
+	color: var(--muted);
+	cursor: default;
+}
+/* Pushed to the right edge, so labels stay left-aligned and the keys line up in
+   their own column. */
+.context-menu-shortcut {
+	margin-left: auto;
+	padding-left: 1.5em;
+	color: var(--muted);
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+.context-menu-wip {
+	margin-left: auto;
+	color: var(--muted);
+	display: inline-flex;
+	align-items: center;
+}
+.context-menu-sep {
+	height: 1px;
+	margin: 4px 0;
+	background: var(--border);
+}

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Orbit"
+       The O of omni, drawn as two lanes: a blue trunk that hands off to a green
+       branch and back, with a commit at each handoff.
+
+       Two earlier takes were discarded at 32px: a ring with one diagonal tail
+       read as a magnifying glass, and a ring with three evenly spaced nodes read
+       as the system share glyph. Two nodes on the same side reads as neither. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232936"/>
+      <stop offset="1" stop-color="#12151b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+
+  <!-- Blue lane over the top, green lane under the bottom, meeting at 9 and 3
+       o'clock. Split on the horizontal so neither arc is short enough to be
+       swallowed by the commit sitting on its end. -->
+  <path d="M 264 512 A 248 248 0 0 1 760 512"
+        fill="none" stroke="#3b82f6" stroke-width="76" stroke-linecap="round"/>
+  <path d="M 264 512 A 248 248 0 0 0 760 512"
+        fill="none" stroke="#22c55e" stroke-width="76" stroke-linecap="round"/>
+
+  <circle cx="760" cy="512" r="104" fill="#12151b"/>
+  <circle cx="760" cy="512" r="72" fill="#22c55e"/>
+  <circle cx="264" cy="512" r="104" fill="#12151b"/>
+  <circle cx="264" cy="512" r="72" fill="#3b82f6"/>
+</svg>

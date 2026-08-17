@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Knockout"
+       The mark is punched out of the tile rather than laid on it. The light band
+       is (glyph − glyph shifted up), which is what gives the cut an edge and
+       makes it read as depth instead of a dark sticker. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38bdf8"/><stop offset="0.45" stop-color="#3b82f6"/><stop offset="1" stop-color="#6366f1"/>
+    </linearGradient>
+    <g id="mark" fill="none" stroke-width="74" stroke-linecap="round">
+      <path d="M 384 380 C 384 520 640 460 640 600 L 640 690"/>
+      <path d="M 384 334 L 384 690"/>
+    </g>
+    <mask id="cut">
+      <rect width="1024" height="1024" fill="#000"/>
+      <use href="#mark" stroke="#fff"/>
+      <circle cx="384" cy="334" r="84" fill="#fff"/>
+      <circle cx="384" cy="690" r="84" fill="#fff"/>
+      <circle cx="640" cy="690" r="84" fill="#fff"/>
+    </mask>
+    <mask id="edge">
+      <g mask="url(#cut)"><rect width="1024" height="1024" fill="#fff"/></g>
+      <g transform="translate(0,-16)"><g mask="url(#cut)"><rect width="1024" height="1024" fill="#000"/></g></g>
+    </mask>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#g)"/>
+  <g mask="url(#cut)"><rect width="1024" height="1024" fill="#0b1220" opacity="0.92"/></g>
+  <g mask="url(#edge)"><rect width="1024" height="1024" fill="#ffffff" opacity="0.45"/></g>
+</svg>

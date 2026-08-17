@@ -1,0 +1,62 @@
+/* Wider than a plain confirm: each mode carries a line explaining what happens to
+   your changes, which is the whole basis for choosing. */
+.reset-dialog {
+	min-width: 380px;
+	max-width: 460px;
+}
+.reset-dialog code {
+	padding: 0 4px;
+	border-radius: 4px;
+	background: var(--bg);
+	font-size: 11px;
+}
+
+.reset-modes {
+	margin: 10px 0 0;
+	padding: 0;
+	border: none;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.reset-legend {
+	padding: 0;
+	margin-bottom: 4px;
+	color: var(--muted);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.reset-mode {
+	display: grid;
+	/* Radio, then label and detail sharing the second column so the detail lines
+	   up under the label rather than wrapping around the radio. */
+	grid-template-columns: auto 1fr;
+	align-items: baseline;
+	gap: 2px 8px;
+	padding: 5px 6px;
+	border-radius: 6px;
+}
+.reset-mode:hover {
+	background: var(--surface-hover);
+}
+.reset-mode-label {
+	color: var(--fg);
+	font-size: 12px;
+	font-weight: 600;
+}
+.reset-mode-detail {
+	grid-column: 2;
+	color: var(--muted);
+	font-size: 11px;
+	line-height: 1.4;
+}
+/* Hard reset is the only mode that can lose work — say so in the colour too, not
+   only in the wording. */
+.reset-mode.is-destructive .reset-mode-label {
+	color: var(--danger-fg);
+}
+.reset-mode.is-destructive:has(input:checked) {
+	background: var(--danger-bg);
+}

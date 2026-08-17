@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Crop"
+       The lanes run off the top and bottom edges, so the tile reads as a window
+       onto a much bigger graph. Density without extra lanes: the eye supplies the
+       history that is cut off. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26304a"/><stop offset="1" stop-color="#0f1219"/>
+    </linearGradient>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="224"/></clipPath>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <g clip-path="url(#tile)">
+    <g fill="none" stroke-width="76" stroke-linecap="butt">
+      <path d="M 690 -40 L 690 470 C 690 590 366 570 366 700" stroke="#22c55e"/>
+      <path d="M 366 -40 L 366 1064" stroke="#3b82f6"/>
+    </g>
+    <circle cx="366" cy="700" r="96" fill="#0f1219"/><circle cx="366" cy="700" r="64" fill="#3b82f6"/>
+    <circle cx="690" cy="330" r="96" fill="#0f1219"/><circle cx="690" cy="330" r="64" fill="#22c55e"/>
+    <circle cx="366" cy="272" r="96" fill="#0f1219"/><circle cx="366" cy="272" r="64" fill="#f59e0b"/>
+  </g>
+</svg>

@@ -1,0 +1,154 @@
+:root,
+:root[data-theme="light"] {
+	color-scheme: light;
+	--bg: #f5f6f8;
+	--surface: #ffffff;
+	--surface-hover: #eef1f5;
+	--fg: #1a1d21;
+	--muted: #697079;
+	--border: #e2e5ea;
+	--accent: #2563eb;
+	--accent-hover: #1d4ed8;
+	--accent-fg: #ffffff;
+	--danger-bg: #fdeceb;
+	--danger-fg: #8a1c12;
+	--danger-border: #f3c9c4;
+	--added: #1a7f37;
+	--diff-add-bg: rgba(46, 160, 67, 0.16);
+	--diff-del-bg: rgba(248, 81, 73, 0.14);
+	--scrollbar: #b8bdc7;
+	--ring: rgba(37, 99, 235, 0.4);
+	--shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+	--shadow-md: 0 4px 16px rgba(16, 24, 40, 0.1);
+}
+
+:root[data-theme="dark"] {
+	color-scheme: dark;
+	--bg: #16181c;
+	--surface: #1e2126;
+	--surface-hover: #272b31;
+	--fg: #e7e9ec;
+	--muted: #9aa1ab;
+	--border: #2b3038;
+	--accent: #3b82f6;
+	--accent-hover: #5a97f8;
+	--accent-fg: #ffffff;
+	--danger-bg: #3a1d1b;
+	--danger-fg: #f6b0a7;
+	--danger-border: #582a26;
+	--added: #3fb950;
+	--diff-add-bg: rgba(63, 185, 80, 0.15);
+	--diff-del-bg: rgba(248, 81, 73, 0.16);
+	--scrollbar: #454b54;
+	--ring: rgba(96, 165, 250, 0.45);
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+	--shadow-md: 0 6px 22px rgba(0, 0, 0, 0.5);
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+	height: 100%;
+	/* The app shell owns the window; panels scroll internally, the page never does. */
+	overflow: hidden;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+	font-size: 14px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+/* Native controls do not inherit color/font — make them. */
+button,
+input,
+textarea,
+select {
+	font: inherit;
+	color: inherit;
+}
+
+button {
+	cursor: pointer;
+}
+
+::selection {
+	background: var(--accent);
+	color: var(--accent-fg);
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+/* Reusable button component */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	height: 34px;
+	padding: 0 14px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--surface);
+	color: var(--fg);
+	font-weight: 500;
+	white-space: nowrap;
+	transition:
+		background 0.12s ease,
+		border-color 0.12s ease;
+}
+
+.btn:hover {
+	background: var(--surface-hover);
+}
+
+.btn-primary {
+	background: var(--accent);
+	border-color: transparent;
+	color: var(--accent-fg);
+}
+
+.btn-primary:hover {
+	background: var(--accent-hover);
+}
+
+.btn-icon {
+	width: 34px;
+	padding: 0;
+	font-size: 15px;
+	line-height: 1;
+}
+
+/* Theme-aware scrollbars (WebView is Chromium/WebKit). */
+::-webkit-scrollbar {
+	width: 12px;
+	height: 12px;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--scrollbar);
+	border: 3px solid transparent;
+	border-radius: 6px;
+	background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--muted);
+	border: 3px solid transparent;
+	background-clip: padding-box;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}

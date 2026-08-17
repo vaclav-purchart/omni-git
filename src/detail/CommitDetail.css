@@ -1,0 +1,135 @@
+.detail,
+.detail-empty {
+	height: 100%;
+	overflow-y: auto;
+}
+.detail-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--muted);
+	padding: 16px;
+	text-align: center;
+}
+.detail-subject {
+	padding: 10px 12px;
+	font-weight: 600;
+	border-bottom: 1px solid var(--border);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.detail-subject-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--border);
+}
+.detail-subject-row .detail-subject {
+	flex: 1;
+	min-width: 0;
+	padding: 6px 0;
+	border-bottom: none;
+}
+.detail-hide-tests {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	margin-right: 8px;
+	padding: 2px 8px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: none;
+	color: var(--muted);
+	font-size: 11px;
+	white-space: nowrap;
+}
+.detail-hide-tests:hover {
+	background: var(--surface-hover);
+}
+.detail-hide-tests.is-on {
+	color: var(--accent);
+	border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.detail-files {
+	list-style: none;
+	margin: 0;
+	padding: 4px;
+}
+.detail-file {
+	width: 100%;
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	/* It's an action row, not selectable text — stop right-click (and drag)
+	   from selecting the filename; the context menu's "Copy Path" covers copy. */
+	-webkit-user-select: none;
+	user-select: none;
+	padding: 6px 8px;
+	background: none;
+	border: none;
+	border-radius: 6px;
+	text-align: left;
+}
+.detail-file:hover {
+	background: var(--surface-hover);
+}
+.detail-file.is-active {
+	background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+/* A multi-selected row. Lighter than the active row on purpose: exactly one row
+   is the one whose diff is on screen, and that one has to stay findable inside a
+   selection of thirty.
+
+   Tint only — no left bar. With one, every selected row read as its own little
+   card and a run of them looked like a stack of boxes rather than one block. */
+.detail-file.is-selected {
+	background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+.detail-file.is-selected.is-active {
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.detail-status {
+	flex: none;
+	width: 20px;
+	font-family: ui-monospace, monospace;
+	font-size: 11px;
+	color: var(--muted);
+}
+.detail-status.s-A {
+	color: var(--added);
+}
+.detail-status.s-D {
+	color: var(--danger-fg);
+}
+.detail-path {
+	flex: 1;
+	min-width: 0;
+	font-family: ui-monospace, monospace;
+	font-size: 12px;
+}
+.detail-file.is-test {
+	opacity: 0.55;
+}
+.detail-file.is-test.is-active {
+	opacity: 1;
+}
+.detail-file.is-highlight {
+	box-shadow: inset 2px 0 0 var(--accent);
+	background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.detail-file.is-active.is-highlight {
+	background: color-mix(in srgb, var(--accent) 16%, transparent);
+	box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* An unmerged file. `U` is git's own code for it, and it is deliberately not one
+   of the added/deleted colours: the file is in neither state yet. */
+.detail-status.s-U {
+	color: var(--danger-fg);
+	font-weight: 700;
+}

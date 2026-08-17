@@ -1,0 +1,72 @@
+/* Ref badges: the little branch/tag/remote chips.
+ *
+ * Shared by the commit railway (on each row) and the commit detail panel (above
+ * the file list). Lifted out of CommitRailway.css when the second user appeared —
+ * the same ref must look the same wherever it is shown, and reaching into another
+ * component's stylesheet for that is a dependency nobody can see.
+ */
+.commit-ref {
+	flex: 0 1 auto;
+	font-size: 11px;
+	padding: 1px 6px;
+	border-radius: 999px;
+	border: 1px solid transparent;
+	white-space: nowrap;
+	max-width: 180px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.commit-ref.ref-local {
+	background: color-mix(in srgb, #3b82f6 20%, transparent);
+	color: #3b82f6;
+	border-color: color-mix(in srgb, #3b82f6 35%, transparent);
+}
+.commit-ref.ref-remote {
+	background: color-mix(in srgb, #f59e0b 20%, transparent);
+	color: #f59e0b;
+	border-color: color-mix(in srgb, #f59e0b 35%, transparent);
+}
+.commit-ref.ref-tag {
+	background: color-mix(in srgb, #22c55e 20%, transparent);
+	color: #22c55e;
+	border-color: color-mix(in srgb, #22c55e 35%, transparent);
+}
+.commit-ref.ref-head {
+	background: color-mix(in srgb, #a855f7 20%, transparent);
+	color: #a855f7;
+}
+/* The checked-out ref. Filled rather than merely bold — at 11px a weight change
+   alone was too easy to miss among the other chips — but filled in its OWN kind
+   colour, so a branch chip stays blue and a detached HEAD stays purple. The
+   language is: outlined = a ref that exists, filled = the ref you're on. */
+.commit-ref.is-head {
+	font-weight: 700;
+	color: var(--accent-fg);
+}
+.commit-ref.is-head.ref-local {
+	background: #3b82f6;
+	border-color: #3b82f6;
+}
+.commit-ref.is-head.ref-head {
+	background: #a855f7;
+	border-color: #a855f7;
+}
+.commit-ref.is-head.ref-remote {
+	background: #f59e0b;
+	border-color: #f59e0b;
+}
+/* A badge is a target in its own right — right-clicking one opens that ref's menu
+   rather than the commit's — so the pointer has to say so.
+
+   `currentColor` rather than an accent: every kind has its own hue, and imposing
+   one colour here would erase the thing the badge is telling you. On a filled
+   (checked-out) chip currentColor is the label colour, which reads as a bright
+   ring against the fill.
+
+   Deliberately after the .is-head rules and no more specific than they are: those
+   set border-color per kind, so only source order lets this win. A bare `HEAD`
+   (detached) is excluded because it names no ref and opens no menu — a hover cue
+   on it would promise something that isn't there. */
+.commit-ref:not(.ref-head):hover {
+	border-color: currentColor;
+}

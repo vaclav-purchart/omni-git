@@ -1,0 +1,79 @@
+.branch-picker {
+	position: relative;
+}
+.branch-picker-value {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 200px;
+	height: 24px;
+	padding: 0 8px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--bg);
+	color: var(--fg);
+	font-size: 12px;
+}
+.branch-picker-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.branch-picker-pop {
+	position: absolute;
+	z-index: 20;
+	top: calc(100% + 4px);
+	left: 0;
+	width: 260px;
+	max-width: 70vw;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	box-shadow: var(--shadow-md);
+	padding: 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.branch-picker-search {
+	height: 28px;
+	padding: 0 8px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--bg);
+	color: var(--fg);
+}
+.branch-picker-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	max-height: 240px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+}
+.branch-picker-option {
+	width: 100%;
+	text-align: left;
+	padding: 5px 8px;
+	border: none;
+	background: none;
+	color: var(--fg);
+	border-radius: 6px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 13px;
+}
+.branch-picker-option:hover {
+	background: var(--surface-hover);
+}
+.branch-picker-option.is-selected {
+	color: var(--accent);
+	font-weight: 600;
+}
+.branch-picker-empty {
+	padding: 6px 8px;
+	color: var(--muted);
+	font-size: 12px;
+}

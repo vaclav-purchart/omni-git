@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>omni-git</title>
+    <script>
+      // First-guess theme from the system preference, purely so the document
+      // isn't white if it ever paints before the bundle runs. The REAL preference
+      // lives in settings.json (on disk, unreachable from here — no IPC), and
+      // main.tsx applies it before the first render; the window stays hidden
+      // until then, so nothing flashes either way.
+      // These hex values must stay in sync with --bg in src/theme/theme.css.
+      (() => {
+        try {
+          const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.setAttribute(
+            "data-theme",
+            dark ? "dark" : "light",
+          );
+          document.documentElement.style.backgroundColor = dark
+            ? "#16181c"
+            : "#f5f6f8";
+        } catch {}
+      })();
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

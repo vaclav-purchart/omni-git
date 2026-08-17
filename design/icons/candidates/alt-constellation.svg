@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Constellation"
+       History as a night sky: the graph is the bright figure, the rest of the
+       repo is the faint stars behind it. "omni" as everything at once. -->
+  <defs>
+    <radialGradient id="sky" cx="0.5" cy="0.35" r="0.85">
+      <stop offset="0" stop-color="#1d2a4d"/><stop offset="0.6" stop-color="#111830"/><stop offset="1" stop-color="#080b14"/>
+    </radialGradient>
+    <filter id="glow" x="-90%" y="-90%" width="280%" height="280%">
+      <feGaussianBlur stdDeviation="26"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#sky)"/>
+  <g fill="#ffffff">
+    <circle cx="196" cy="238" r="7" opacity="0.5"/><circle cx="286" cy="640" r="5" opacity="0.35"/>
+    <circle cx="822" cy="290" r="6" opacity="0.45"/><circle cx="742" cy="806" r="5" opacity="0.3"/>
+    <circle cx="600" cy="180" r="4" opacity="0.4"/><circle cx="234" cy="820" r="6" opacity="0.35"/>
+    <circle cx="880" cy="606" r="4" opacity="0.3"/><circle cx="430" cy="884" r="5" opacity="0.3"/>
+  </g>
+  <g fill="none" stroke-width="40" stroke-linecap="round" opacity="0.9">
+    <path d="M 344 260 L 344 792" stroke="#3b82f6"/>
+    <path d="M 344 470 C 344 606 680 534 680 664" stroke="#22c55e"/>
+    <path d="M 344 620 C 344 500 208 536 208 430" stroke="#a855f7"/>
+  </g>
+  <g filter="url(#glow)" opacity="0.8">
+    <circle cx="344" cy="260" r="56" fill="#f59e0b"/>
+    <circle cx="344" cy="792" r="50" fill="#3b82f6"/>
+    <circle cx="680" cy="664" r="50" fill="#22c55e"/>
+    <circle cx="208" cy="430" r="44" fill="#a855f7"/>
+  </g>
+  <g>
+    <circle cx="344" cy="260" r="64" fill="#f59e0b"/>
+    <circle cx="344" cy="792" r="56" fill="#3b82f6"/>
+    <circle cx="680" cy="664" r="56" fill="#22c55e"/>
+    <circle cx="208" cy="430" r="48" fill="#a855f7"/>
+  </g>
+</svg>

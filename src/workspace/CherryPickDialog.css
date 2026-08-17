@@ -1,0 +1,23 @@
+.cherry-dialog {
+	min-width: 420px;
+	max-width: 520px;
+}
+
+/* The commits about to be applied, OLDEST first — the order git will use, which
+   is the reverse of the order the log showed them in. Numbered for the same
+   reason: the sequence is the point. */
+.cherry-list {
+	margin: 8px 0 0;
+	padding: 6px 8px 6px 28px;
+	max-height: 140px;
+	overflow-y: auto;
+	border-radius: 6px;
+	background: var(--bg);
+	color: var(--muted);
+	font-size: 11px;
+	line-height: 1.6;
+}
+.cherry-list code {
+	font-family: ui-monospace, "SF Mono", Menlo, monospace;
+	color: var(--fg);
+}

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "inf-trunk"
+       The vertical figure-eight with history continuing past it: a lane arrives from below, splits, crosses, rejoins, and carries on off the top. Fills the tile and says something git-shaped while doing it. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#252b39"/><stop offset="1" stop-color="#10131a"/>
+    </linearGradient>
+    <linearGradient id="lane" gradientUnits="userSpaceOnUse" x1="180" y1="300" x2="844" y2="724">
+      <stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#22c55e"/>
+    </linearGradient>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="224"/></clipPath>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <g clip-path="url(#tile)">
+    <path d="M 512 -40 L 512 1064" fill="none" stroke="#3b82f6" stroke-width="88"/>
+    <g transform="rotate(90 512 512)">
+      <path d="M 512 512 C 420 236 216 236 216 512 C 216 788 420 788 512 512 C 604 236 808 236 808 512 C 808 788 604 788 512 512 Z" fill="none" stroke="url(#lane)" stroke-width="88" stroke-linecap="round"/>
+    </g>
+    <circle cx="512" cy="216" r="96" fill="#12151b"/><circle cx="512" cy="216" r="62" fill="#22c55e"/>
+    <circle cx="512" cy="808" r="96" fill="#12151b"/><circle cx="512" cy="808" r="62" fill="#3b82f6"/>
+    <circle cx="512" cy="512" r="96" fill="#12151b"/><circle cx="512" cy="512" r="62" fill="#f59e0b"/>
+  </g>
+</svg>

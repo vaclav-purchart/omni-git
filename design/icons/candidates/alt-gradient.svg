@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Gradient"
+       The opposite bet from the dark tiles: a saturated gradient ground with one
+       white glyph. Colour carries the identity, so the mark can stay simple and
+       still survive being shrunk. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="0.5" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#9333ea"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="0.25" cy="0.12" r="0.9">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/>
+      <stop offset="0.6" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="drop" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#1e1b4b" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#g)"/>
+  <rect width="1024" height="1024" rx="224" fill="url(#sheen)"/>
+
+  <g filter="url(#drop)">
+    <path d="M 384 380 C 384 520 640 460 640 600 L 640 700"
+          fill="none" stroke="#ffffff" stroke-width="66" stroke-linecap="round"/>
+    <path d="M 384 320 L 384 700" fill="none" stroke="#ffffff" stroke-width="66" stroke-linecap="round"/>
+    <circle cx="384" cy="320" r="76" fill="#ffffff"/>
+    <circle cx="384" cy="700" r="76" fill="#ffffff"/>
+    <circle cx="640" cy="700" r="76" fill="#ffffff"/>
+  </g>
+</svg>

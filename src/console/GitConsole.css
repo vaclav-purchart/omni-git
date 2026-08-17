@@ -1,0 +1,115 @@
+.git-console {
+	border-top: 1px solid var(--border);
+	background: var(--surface);
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+.git-console.is-open {
+	height: 30vh;
+}
+.git-console-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 4px 10px;
+	flex: none;
+}
+.git-console-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: none;
+	border: none;
+	color: var(--fg);
+	font-weight: 500;
+}
+.git-console-caret {
+	color: var(--muted);
+	width: 12px;
+}
+.git-console-count {
+	color: var(--muted);
+	font-size: 12px;
+}
+.git-console-hint {
+	color: var(--muted);
+	font-size: 11px;
+	font-weight: 400;
+	opacity: 0.7;
+}
+.git-console-clear {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	background: none;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	color: var(--fg);
+	padding: 2px 10px;
+}
+.git-console-clear:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+.git-console-body {
+	overflow-y: auto;
+	padding: 4px 10px 10px;
+	font-family: ui-monospace, "SF Mono", Menlo, monospace;
+	font-size: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.git-console-entry {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+.git-console-meta {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+}
+.git-console-time {
+	flex: none;
+	color: var(--muted);
+	opacity: 0.8;
+}
+.git-console-cmd {
+	color: var(--fg);
+	word-break: break-all;
+}
+.git-console-exit.ok {
+	color: var(--muted);
+}
+.git-console-exit.err {
+	color: var(--danger-fg);
+}
+.git-console-stderr {
+	margin: 2px 0 0;
+	white-space: pre-wrap;
+	color: var(--danger-fg);
+}
+
+/* Right-hand cluster of the bottom bar. */
+.git-console-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+.git-console-icon {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 6px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: none;
+	color: var(--muted);
+	font-size: 13px;
+	line-height: 1;
+}
+.git-console-icon:hover {
+	background: var(--surface-hover);
+	color: var(--fg);
+}

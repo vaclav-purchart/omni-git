@@ -1,0 +1,210 @@
+.wc-action-error {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 12px;
+	background: var(--danger-bg);
+	color: var(--danger-fg);
+	border-bottom: 1px solid var(--danger-border);
+	font-size: 12px;
+}
+.wc-action-error-message {
+	flex: 1;
+	min-width: 0;
+	word-break: break-word;
+}
+.wc-action-error-dismiss {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 0 4px;
+	border: none;
+	background: none;
+	color: var(--danger-fg);
+	font-size: 12px;
+	line-height: 1;
+}
+.wc-action-error-dismiss:hover {
+	opacity: 0.7;
+}
+.wc-toolbar-btn {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 2px 8px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: none;
+	color: var(--muted);
+	font-size: 11px;
+	white-space: nowrap;
+}
+.wc-toolbar-btn:hover:not(:disabled) {
+	background: var(--surface-hover);
+	color: var(--fg);
+}
+/* Destructive selection actions. The colour is carried by the LABEL, with the
+   border left neutral until hover: two boxed red buttons sitting in the toolbar
+   read as an alarm going off rather than as two things you might choose to do. */
+.wc-toolbar-btn.is-danger {
+	color: var(--danger-fg);
+}
+.wc-toolbar-btn.is-danger:hover:not(:disabled) {
+	background: var(--danger-bg);
+	border-color: var(--danger-border);
+	color: var(--danger-fg);
+}
+.wc-toolbar-btn:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+.detail-files li {
+	display: flex;
+	align-items: center;
+	/* Positioning context for the row actions, which overlay rather than sit
+	   beside the path. */
+	position: relative;
+}
+/*
+ * Stage/Discard float OVER the file path instead of taking a column of their own.
+ *
+ * As inline siblings they reserved their width on every row even at opacity 0, so
+ * every path was truncated by the width of buttons that are usually not there —
+ * painful on a narrow panel. Absolutely positioned, the path gets the full row and
+ * the buttons only cover its tail, at the moment they're actually usable.
+ */
+.wc-file-actions {
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	/* Room for the fade, so the path doesn't butt up against the first button. */
+	padding-left: 24px;
+	opacity: 0;
+	/* Must not swallow clicks meant for the path underneath while invisible. */
+	pointer-events: none;
+	/* Opaque tail so the covered part of the path doesn't show through. Matches
+	   the row's hover background, which is what's beneath whenever these are
+	   visible. */
+	background: linear-gradient(to right, transparent, var(--surface-hover) 24px);
+}
+/* A selected row keeps its accent background on hover, so the scrim has to match
+   THAT instead — the accent mix as composited over the panel. */
+.detail-files li:has(.detail-file.is-active) .wc-file-actions {
+	background: linear-gradient(
+		to right,
+		transparent,
+		color-mix(in srgb, var(--accent) 16%, var(--surface)) 24px
+	);
+}
+/*
+ * Shown for the hovered row (tracked in state — see FileList) and ALWAYS for the
+ * active one.
+ *
+ * Not `:hover`: browsers don't re-evaluate it when the DOM shifts under a
+ * stationary cursor, so after staging a file the buttons stayed on whichever node
+ * had been hovered — visibly the wrong file. Including the active row also means
+ * that after staging, the actions are already on the file that just became
+ * selected, ready for the next one.
+ */
+.detail-files li.is-hovered .wc-file-actions,
+.detail-files li:has(.detail-file.is-active) .wc-file-actions,
+.detail-files li:focus-within .wc-file-actions {
+	opacity: 1;
+	pointer-events: auto;
+}
+.wc-action-btn {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 2px 6px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--surface);
+	color: var(--muted);
+	font-size: 11px;
+	white-space: nowrap;
+}
+.wc-action-btn:hover {
+	background: var(--surface-hover);
+	color: var(--fg);
+}
+.wc-action-danger {
+	border-color: var(--danger-border);
+	background: var(--danger-bg);
+	color: var(--danger-fg);
+}
+.wc-action-danger:hover {
+	filter: brightness(1.05);
+}
+
+/* Group actions live on the section header, so they inherit its hue rather than
+   introducing a fourth colour. Icon-only: the header is a 11px strip, and the
+   title/aria-label carry the full "Stage all 3 unstaged files". */
+.wc-group-btn {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	/* Same icon/label gap, padding and radius as .wc-action-btn — these are the
+	   same kind of control at a different scope, so they should look it. */
+	gap: 0.4em;
+	padding: 2px 8px;
+	border: 1px solid
+		color-mix(in srgb, var(--section, var(--border)) 45%, transparent);
+	border-radius: 6px;
+	background: var(--surface);
+	color: var(--section, var(--muted));
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+	/* The header is uppercase and letter-spaced; that suits a section label but
+	   not a word on a button. */
+	text-transform: none;
+	letter-spacing: 0;
+	line-height: 1.5;
+}
+.wc-group-btn:hover {
+	background: color-mix(in srgb, var(--section, var(--muted)) 22%, transparent);
+}
+/* The destructive ones drop the group hue for the danger colour — losing work
+   should not look like the group's normal action. */
+.wc-group-danger {
+	border-color: var(--danger-border);
+	color: var(--danger-fg);
+}
+.wc-group-danger:hover {
+	background: var(--danger-bg);
+}
+
+/* The selection's count and dismiss, which live in the toolbar row while rows are
+   selected (the toolbar becomes selection-scoped rather than growing a second bar
+   above itself). */
+.wc-selection-count {
+	flex: none;
+	margin-right: 2px;
+	color: var(--fg);
+	font-size: 11px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.wc-selection-clear {
+	flex: none;
+	display: inline-flex;
+	padding: 2px;
+	border: none;
+	border-radius: 4px;
+	background: none;
+	color: var(--muted);
+	cursor: pointer;
+}
+.wc-selection-clear:hover {
+	background: var(--surface-hover);
+	color: var(--fg);
+}

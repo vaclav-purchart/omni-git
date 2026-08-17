@@ -1,0 +1,279 @@
+/* Docked at the bottom of the file panel: `flex: none` so the file list above
+   keeps all the leftover height and scrolls, while the box only ever takes the
+   space its content needs. */
+.commitbox {
+	flex: none;
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid var(--border);
+	background: var(--surface);
+	/* Same left edge as the file divisions, in the accent that means "this is the
+	   commit you are writing". */
+	box-shadow: inset 3px 0 0 var(--accent);
+}
+
+/* Reads as a peer of the two file divisions above it: preparing a commit is three
+   decisions — what is in it, what is not, and what it says — so all three headings
+   are set the same way rather than the message quietly being a footer. */
+.commitbox-header {
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 9px 12px 7px;
+	border: none;
+	background: none;
+	color: var(--fg);
+	font-size: 11px;
+	text-align: left;
+	width: 100%;
+	min-width: 0;
+}
+.commitbox-header:hover {
+	color: var(--fg);
+}
+.commitbox-title {
+	flex: none;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+}
+.commitbox-count {
+	flex: none;
+	opacity: 0.8;
+}
+/* Collapsed state shows the draft's first line so a pending message isn't
+   invisible. */
+.commitbox-preview {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-style: italic;
+	opacity: 0.8;
+}
+
+/* Read-only message panel (CommitMessage). `pre-wrap` preserves the author's
+   own line breaks; `user-select: text` because the surrounding rows set
+   `user-select: none` and people copy text out of commit messages. */
+.commitbox-text {
+	margin: 0 8px 8px;
+	padding: 6px 8px;
+	max-height: 14em;
+	overflow-y: auto;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--bg);
+	color: var(--fg);
+	font-size: 12px;
+	line-height: 1.45;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	user-select: text;
+}
+
+.commitbox-message {
+	margin: 0 8px;
+	padding: 6px 8px;
+	min-height: 3.4em;
+	/* Auto-grow (set inline in JS) is capped here so a long body scrolls
+	   instead of squeezing the file list out of the panel. */
+	max-height: 14em;
+	resize: none;
+	overflow-y: auto;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--bg);
+	color: var(--fg);
+	font-family: inherit;
+	font-size: 12px;
+	line-height: 1.45;
+}
+.commitbox-message:focus {
+	outline: none;
+	border-color: var(--accent);
+}
+.commitbox-message:disabled {
+	opacity: 0.6;
+}
+
+.commitbox-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+}
+.commitbox-amend {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	color: var(--muted);
+	font-size: 11px;
+	white-space: nowrap;
+}
+.commitbox-amend input:disabled {
+	opacity: 0.45;
+}
+.commitbox-amend:has(input:disabled) {
+	opacity: 0.45;
+}
+.commitbox-recall-btn {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 2px 8px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: none;
+	color: var(--muted);
+	font-size: 11px;
+	white-space: nowrap;
+}
+.commitbox-recall-btn:hover {
+	background: var(--surface-hover);
+	color: var(--fg);
+}
+.commitbox-commit {
+	flex: none;
+	margin-left: auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 3px 12px;
+	border: 1px solid var(--accent);
+	border-radius: 6px;
+	background: var(--accent);
+	color: var(--accent-fg);
+	font-size: 12px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.commitbox-commit:hover:not(:disabled) {
+	filter: brightness(1.08);
+}
+/* Secondary next to Commit: outlined rather than filled, so the primary action
+   still reads as the primary one. */
+.commitbox-commit.is-secondary {
+	margin-left: 0;
+	border-color: var(--border);
+	background: none;
+	color: var(--fg);
+	font-weight: 500;
+}
+.commitbox-commit.is-secondary:hover:not(:disabled) {
+	background: var(--surface-hover);
+	filter: none;
+}
+.commitbox-commit:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+
+/* An inline section below the actions — deliberately not an anchored dropdown,
+   matching FileFilterPanel.
+   When it's open the whole commit box is allowed to GROW (`.has-recall`
+   overrides `flex: none`), so the list gets real height and the file list above
+   yields space. Previously it was squeezed into a fixed strip, which made a long
+   history unreadable. */
+.commitbox.has-recall {
+	flex: 1 1 auto;
+	min-height: 0;
+}
+.commitbox-recall {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	min-height: 7em;
+	border-top: 1px solid var(--border);
+	background: var(--bg);
+}
+.commitbox-recall-search {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 4px 8px;
+	border-bottom: 1px solid var(--border);
+	color: var(--muted);
+	font-size: 11px;
+}
+.commitbox-recall-search input {
+	flex: 1;
+	min-width: 0;
+	border: none;
+	background: none;
+	color: var(--fg);
+	font-family: inherit;
+	font-size: 12px;
+}
+.commitbox-recall-search input:focus {
+	outline: none;
+}
+.commitbox-recall-close {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	padding: 0 2px;
+	border: none;
+	background: none;
+	color: var(--muted);
+	font-size: 12px;
+	line-height: 1;
+}
+.commitbox-recall-close:hover {
+	color: var(--fg);
+}
+/* The scrolling region. Themed scrollbars come from the global
+   ::-webkit-scrollbar rules in theme.css. */
+.commitbox-recall-list {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+}
+.commitbox-recall-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 5px 12px;
+	border: none;
+	border-bottom: 1px solid var(--border);
+	background: none;
+	color: var(--fg);
+	font-size: 12px;
+	text-align: left;
+}
+.commitbox-recall-subject {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.commitbox-recall-more {
+	flex: none;
+	padding: 0 4px;
+	border-radius: 4px;
+	background: var(--surface-hover);
+	color: var(--muted);
+	font-size: 10px;
+}
+.commitbox-recall-item:hover,
+.commitbox-recall-item.is-active {
+	background: var(--surface-hover);
+}
+.commitbox-recall-empty {
+	padding: 8px 12px;
+	color: var(--muted);
+	font-size: 12px;
+}
+.commitbox-recall-btn.is-on {
+	background: var(--surface-hover);
+	color: var(--fg);
+}
+
+/* No error banner here on purpose: commit output (including hook rejections)
+   goes to the workspace-owned output panel, because this subtree remounts on
+   every refresh and a local banner flashed and vanished. */

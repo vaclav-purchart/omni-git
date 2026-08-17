@@ -1,0 +1,189 @@
+.sidebar {
+	height: 100%;
+	overflow-y: auto;
+	background: var(--surface);
+	border-right: 1px solid var(--border);
+	padding: 4px 0;
+	font-size: 13px;
+}
+/* Sticky, because the sidebar itself is the scroller: a filter field that scrolls
+   away is one you have to hunt for to clear. The background is opaque for the same
+   reason — refs must not show through it. */
+.sidebar-search {
+	position: sticky;
+	top: -4px;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: -4px 0 4px;
+	padding: 6px 8px;
+	background: var(--surface);
+	border-bottom: 1px solid var(--border);
+}
+.sidebar-search-icon {
+	flex: none;
+	color: var(--muted);
+	font-size: 12px;
+}
+.sidebar-search-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 3px 0;
+	border: none;
+	background: none;
+	color: var(--fg);
+	font-size: 12px;
+}
+.sidebar-search-input::placeholder {
+	color: var(--muted);
+}
+.sidebar-search-input:focus {
+	outline: none;
+}
+/* The whole field takes the focus ring, not just the bare input inside it. */
+.sidebar-search:focus-within {
+	border-bottom-color: var(--accent);
+}
+.sidebar-search-clear {
+	flex: none;
+	display: inline-flex;
+	padding: 2px;
+	border: none;
+	border-radius: 4px;
+	background: none;
+	color: var(--muted);
+	cursor: pointer;
+}
+.sidebar-search-clear:hover {
+	background: var(--surface-hover);
+	color: var(--fg);
+}
+.sidebar-empty {
+	padding: 10px 12px;
+	color: var(--muted);
+	font-size: 12px;
+	font-style: italic;
+}
+.sidebar-loading {
+	padding: 16px;
+	color: var(--muted);
+}
+.sidebar-error {
+	padding: 16px;
+	color: var(--danger-fg);
+}
+.sidebar-section {
+	margin-bottom: 2px;
+}
+.sidebar-section-header {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	padding: 4px 10px;
+	background: none;
+	border: none;
+	color: var(--muted);
+	font-weight: 600;
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+.sidebar-caret {
+	flex: none;
+	width: 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+.sidebar-section-icon {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+}
+.sidebar-section-count {
+	margin-left: auto;
+	font-weight: 400;
+}
+.sidebar-section-body {
+	display: flex;
+	flex-direction: column;
+}
+.sidebar-row {
+	display: flex;
+	min-width: 0;
+	padding: 0 6px;
+}
+.sidebar-ref {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	/* Action row — right-click opens the context menu, don't select text. */
+	-webkit-user-select: none;
+	user-select: none;
+	padding: 4px 8px;
+	background: none;
+	border: none;
+	border-radius: 6px;
+	color: var(--fg);
+	text-align: left;
+	min-width: 0;
+}
+.sidebar-ref:hover {
+	background: var(--surface-hover);
+}
+/* Two DIFFERENT things, deliberately styled differently because they're usually
+   different refs and both matter:
+   `.is-active`      — this ref's tip is the commit currently being inspected.
+                       A selection cue, same accent background as the railway's
+                       selected row.
+   `.is-checked-out`  — this is the branch the repo is actually on. An edge
+                       marker + weight, so it composes with .is-active instead of
+                       competing for the same background, and in --added (green)
+                       to match its dot and the railway's HEAD row rather than
+                       reusing the accent that already means "selected". */
+.sidebar-ref.is-active {
+	background: color-mix(in srgb, var(--accent) 16%, transparent);
+	color: var(--accent);
+	font-weight: 600;
+}
+.sidebar-ref.is-checked-out {
+	box-shadow: inset 3px 0 0 var(--added);
+	font-weight: 700;
+}
+.sidebar-ref-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.sidebar-head-dot {
+	flex: none;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--added);
+}
+.sidebar-static {
+	padding: 4px 14px;
+	color: var(--muted);
+}
+.sidebar-static .sidebar-ref-name {
+	display: block;
+}
+
+/* Ahead/behind counts against the upstream. */
+.sidebar-track {
+	flex: none;
+	padding: 0 3px;
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--accent) 18%, transparent);
+	color: var(--accent);
+	font-size: 10px;
+	font-variant-numeric: tabular-nums;
+}
+.sidebar-track.is-gone {
+	background: var(--danger-bg);
+	color: var(--danger-fg);
+}

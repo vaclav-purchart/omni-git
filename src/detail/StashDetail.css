@@ -1,0 +1,10 @@
+/* The stash's own selector, kept to hand because "stash@{2}" is what every git
+   command and every piece of advice on the internet will ask you for. Pushed to
+   the far end of the toolbar so it reads as a label, not another action. */
+.stash-selector {
+	margin-left: auto;
+	color: var(--muted);
+	font-family: ui-monospace, "SF Mono", Menlo, monospace;
+	font-size: 11px;
+	white-space: nowrap;
+}

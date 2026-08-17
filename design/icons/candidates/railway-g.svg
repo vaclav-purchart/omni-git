@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Railway G"
+       Trunk down the middle with a branch spurring off each side, five commits,
+       HEAD in amber. Both branches stay open on purpose: a branch that merges
+       back encloses an area, and an enclosed area reads as a play button rather
+       than a graph — which is what sank three earlier drafts. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#252b39"/>
+      <stop offset="0.55" stop-color="#181c25"/>
+      <stop offset="1" stop-color="#10131a"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.02"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <rect x="6" y="6" width="1012" height="1012" rx="218" fill="none" stroke="url(#rim)" stroke-width="12"/>
+
+  <g fill="none" stroke-width="100" stroke-linecap="round" opacity="0.15">
+    <path d="M 512 798 C 512 706 760 716 760 624 L 760 560" stroke="#22c55e"/>
+    <path d="M 512 512 C 512 420 264 430 264 338" stroke="#a855f7"/>
+    <path d="M 512 214 L 512 850" stroke="#3b82f6"/>
+  </g>
+  <g fill="none" stroke-width="54" stroke-linecap="round">
+    <path d="M 512 798 C 512 706 760 716 760 624 L 760 560" stroke="#22c55e"/>
+    <path d="M 512 512 C 512 420 264 430 264 338" stroke="#a855f7"/>
+    <path d="M 512 214 L 512 850" stroke="#3b82f6"/>
+  </g>
+  <g>
+    <circle cx="760" cy="560" r="80" fill="#12151b"/><circle cx="760" cy="560" r="54" fill="#22c55e"/>
+    <circle cx="264" cy="338" r="80" fill="#12151b"/><circle cx="264" cy="338" r="54" fill="#a855f7"/>
+    <circle cx="512" cy="512" r="80" fill="#12151b"/><circle cx="512" cy="512" r="54" fill="#3b82f6"/>
+    <circle cx="512" cy="798" r="80" fill="#12151b"/><circle cx="512" cy="798" r="54" fill="#3b82f6"/>
+    <circle cx="512" cy="266" r="80" fill="#12151b"/><circle cx="512" cy="266" r="54" fill="#f59e0b"/>
+  </g>
+</svg>

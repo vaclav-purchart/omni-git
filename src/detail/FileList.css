@@ -1,0 +1,186 @@
+.file-list-hint {
+	padding: 8px 12px;
+	color: var(--muted);
+	font-size: 12px;
+	font-style: italic;
+	border-bottom: 1px solid var(--border);
+}
+/*
+ * The top-level divisions: what is in the commit, and what is not.
+ *
+ * These lead, and the section headers under them follow — the reverse of how it
+ * looked when staged/unstaged/untracked were three equally loud peers. A group
+ * heading states the consequence ("in this commit"); a section heading names the
+ * git mechanism that put a file there.
+ */
+.wc-group-header {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 9px 12px 7px;
+	border-top: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--fg);
+	font-size: 11px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.07em;
+}
+/* No line above the first one — it would read as the bottom edge of the toolbar. */
+.wc-group-header:first-child {
+	border-top: none;
+}
+/* Green for the commit being built, neutral for everything outside it: the point
+   of the division is that one of these two is the commit. */
+.wc-group-header.g-Staged {
+	box-shadow: inset 3px 0 0 var(--added);
+}
+.wc-group-header.g-Unstaged {
+	box-shadow: inset 3px 0 0 var(--muted);
+}
+/* The conflicts division. Red, and the only one that ever leads the panel: while
+   it is there, nothing else can proceed. */
+.wc-group-header.g-Conflicted {
+	box-shadow: inset 3px 0 0 var(--danger-fg);
+	color: var(--danger-fg);
+}
+.wc-section-header.s-Conflicted {
+	--section: var(--danger-fg);
+}
+.wc-group-label {
+	flex: none;
+}
+.wc-group-count {
+	flex: none;
+	padding: 0 6px;
+	border-radius: 999px;
+	background: var(--surface-hover);
+	color: var(--muted);
+	font-weight: 700;
+	font-size: 10px;
+	font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Section headers are colour-coded per group.
+ *
+ * They previously differed from the file rows only by being small and uppercase,
+ * so the three groups blended into one list and telling staged from unstaged meant
+ * reading the words. Each now carries a hue — on the label, a left bar, and a tint
+ * — so the grouping is legible while scanning.
+ *
+ * `--section` is set per group below and drives all three, so a group's colour is
+ * stated once.
+ */
+.wc-section-header {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 12px 4px 20px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	color: var(--section, var(--muted));
+	/* Deliberately faint. The hue still names the group — on the label, the count
+	   and the left bar — but a header is a signpost, not the content: at 12% tint
+	   with two borders these read louder than the filenames under them, which
+	   inverted the hierarchy of the whole panel. */
+	background: color-mix(in srgb, var(--section, var(--muted)) 5%, transparent);
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--section, var(--border)) 18%, transparent);
+	box-shadow: inset 2px 0 0 var(--section, transparent);
+}
+/* Separates a group from the rows of the one above, without a line under the
+   last row of the list. */
+.wc-section-header:not(:first-child),
+div:not(:first-child) > .wc-section-header {
+	margin-top: 2px;
+}
+.wc-section-header.s-Staged {
+	--section: var(--added);
+}
+.wc-section-header.s-Unstaged {
+	--section: #f59e0b;
+}
+.wc-section-header.s-Untracked {
+	--section: #a855f7;
+}
+.wc-section-label {
+	flex: none;
+}
+.wc-section-count {
+	flex: none;
+	padding: 0 5px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--section, var(--muted)) 16%, transparent);
+	color: var(--section, var(--muted));
+	font-weight: 700;
+	font-size: 10px;
+	font-variant-numeric: tabular-nums;
+	opacity: 0.9;
+}
+/* Group actions, revealed on header hover — same reasoning as the row actions:
+   no space reserved for buttons that are usually absent. */
+.wc-section-actions {
+	margin-left: auto;
+	display: flex;
+	gap: 4px;
+	opacity: 0;
+	pointer-events: none;
+}
+.wc-section-header.is-hovered .wc-section-actions,
+.wc-section-header:focus-within .wc-section-actions {
+	opacity: 1;
+	pointer-events: auto;
+}
+/* FileList is the flex column filling `.ws-fill` (overflow:hidden, block
+   flow, no height contribution of its own). The header row (subject +
+   toolbar + filter bar), the optional full-width filter panel "second line"
+   (normal flow, no overlay/absolute positioning), and the "filtered out"
+   hint stay fixed height at the top; the `.detail` body takes the remaining
+   space and owns the scroll, so nothing overflows `.ws-fill` and gets
+   clipped — the panel pushes the list down instead of floating over it. */
+.filelist {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+}
+.filelist > .detail-subject-row,
+.filelist > .filter-panel,
+.filelist > .file-list-hint {
+	flex: 0 0 auto;
+}
+/* Wrapper for a detail panel that stacks fixed-height sections (error banner,
+   commit box, message panel) around the file list. The list takes the leftover
+   height and scrolls; everything else keeps its natural height.
+   Required because `.filelist` is height:100% — inside a non-flex parent, any
+   sibling pushed the list past the bottom of the panel.
+   Declared after `.filelist` so the more specific override actually wins. */
+.detail-root {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+}
+.detail-root > .filelist {
+	flex: 1 1 auto;
+	min-height: 0;
+	height: auto;
+}
+.filelist > .detail {
+	flex: 1 1 auto;
+	min-height: 0;
+	height: auto;
+}
+/* The list body is focusable (tabIndex=0) so the arrow keys work, and the global
+   :focus-visible rule drew a 2px offset outline around it. On a scroll container
+   that sits flush against the toolbar, all that was ever visible was the top
+   edge — a stray blue line between the header and the first section. An INSET
+   ring says the same thing and cannot be clipped. */
+.filelist > .detail:focus-visible {
+	outline: none;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}

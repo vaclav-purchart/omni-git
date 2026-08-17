@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Railway B"
+       A real fragment of the app's commit graph: a trunk, a green branch that
+       loops out and merges back, and a purple branch off that one still open at
+       the top. Lane colours are BRANCH_PALETTE entries 0/1/2/4. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232936"/>
+      <stop offset="1" stop-color="#12151b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <g fill="none" stroke-width="52" stroke-linecap="round">
+    <!-- Purple: branches off the green commit and stays unmerged. -->
+    <path d="M 512 604 C 512 508 712 508 712 412 L 712 268" stroke="#a855f7"/>
+    <!-- Green: leaves the base commit, takes its own lane, merges back in. -->
+    <path d="M 312 796 C 312 700 512 700 512 604 C 512 508 312 508 312 412" stroke="#22c55e"/>
+    <!-- Blue trunk. -->
+    <path d="M 312 220 L 312 796" stroke="#3b82f6"/>
+  </g>
+  <g>
+    <circle cx="712" cy="268" r="76" fill="#12151b"/><circle cx="712" cy="268" r="52" fill="#a855f7"/>
+    <circle cx="512" cy="604" r="76" fill="#12151b"/><circle cx="512" cy="604" r="52" fill="#22c55e"/>
+    <circle cx="312" cy="220" r="76" fill="#12151b"/><circle cx="312" cy="220" r="52" fill="#f59e0b"/>
+    <circle cx="312" cy="412" r="76" fill="#12151b"/><circle cx="312" cy="412" r="52" fill="#3b82f6"/>
+    <circle cx="312" cy="796" r="76" fill="#12151b"/><circle cx="312" cy="796" r="52" fill="#3b82f6"/>
+  </g>
+</svg>

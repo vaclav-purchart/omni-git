@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Merge"
+       Two lanes converging into one. The boldest of the three: at 16px it is
+       still unmistakably a Y with three dots. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232936"/>
+      <stop offset="1" stop-color="#12151b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+
+  <!-- Right lane merging into the trunk -->
+  <path d="M 700 268 L 700 420 C 700 520, 512 520, 512 620"
+        fill="none" stroke="#22c55e" stroke-width="64" stroke-linecap="round"/>
+
+  <!-- Trunk, straight through -->
+  <line x1="512" y1="268" x2="512" y2="756" stroke="#3b82f6" stroke-width="64" stroke-linecap="round"/>
+
+  <!-- Commits: the two branch tips and the merge -->
+  <circle cx="512" cy="268" r="92" fill="#12151b"/>
+  <circle cx="512" cy="268" r="64" fill="#3b82f6"/>
+  <circle cx="700" cy="268" r="92" fill="#12151b"/>
+  <circle cx="700" cy="268" r="64" fill="#22c55e"/>
+  <circle cx="512" cy="756" r="92" fill="#12151b"/>
+  <circle cx="512" cy="756" r="64" fill="#f59e0b"/>
+</svg>

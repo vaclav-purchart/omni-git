@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "inf-diagonal"
+       Tilted onto the diagonal, the longest line a square has to offer.
+       The commits live inside the rotated group rather than at hand-computed
+       coordinates, so they cannot drift away from the lane they sit on. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#252b39"/><stop offset="1" stop-color="#10131a"/>
+    </linearGradient>
+    <linearGradient id="lane" gradientUnits="userSpaceOnUse" x1="180" y1="300" x2="844" y2="724">
+      <stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#22c55e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <g transform="rotate(-38 512 512)">
+    <path d="M 512 512 C 420 180 200 180 200 512 C 200 844 420 844 512 512 C 604 180 824 180 824 512 C 824 844 604 844 512 512 Z"
+          fill="none" stroke="url(#lane)" stroke-width="88" stroke-linecap="round"/>
+    <circle cx="200" cy="512" r="96" fill="#12151b"/><circle cx="200" cy="512" r="62" fill="#3b82f6"/>
+    <circle cx="824" cy="512" r="96" fill="#12151b"/><circle cx="824" cy="512" r="62" fill="#22c55e"/>
+    <circle cx="512" cy="512" r="96" fill="#12151b"/><circle cx="512" cy="512" r="62" fill="#f59e0b"/>
+  </g>
+</svg>

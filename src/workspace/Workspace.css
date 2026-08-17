@@ -1,0 +1,230 @@
+.workspace {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+.workspace-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+}
+.workspace-back {
+	flex: none;
+	font-size: 16px;
+}
+.workspace-name {
+	margin: 0;
+	flex: none;
+	font-size: 14px;
+	font-weight: 600;
+	max-width: 220px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.workspace-path {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--muted);
+	font-size: 12px;
+	font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+/* App controls — sidebar, refresh, theme. Separated from the git operations by a
+   rule, because they are a different KIND of thing: one group changes the repo,
+   the other changes the window. */
+.workspace-header-actions {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding-left: 10px;
+	border-left: 1px solid var(--border);
+}
+
+.workspace-git-actions {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+/* A git operation, with its name on it. These were icon-only, so learning what
+   any of them did meant hovering and waiting for a tooltip — for buttons that
+   talk to a remote. */
+.workspace-op {
+	flex: none;
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 4px 10px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	background: var(--surface);
+	color: var(--fg);
+	font-size: 12px;
+	white-space: nowrap;
+	cursor: pointer;
+}
+.workspace-op:hover {
+	background: var(--surface-hover);
+	border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.workspace-op:disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+/* Two visible options with the active one marked, rather than one button whose
+   label described the state while clicking it did the opposite. */
+.workspace-segmented {
+	flex: none;
+	display: inline-flex;
+	padding: 2px;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: var(--bg);
+}
+.workspace-segment {
+	flex: none;
+	padding: 2px 10px;
+	border: none;
+	border-radius: 999px;
+	background: none;
+	color: var(--muted);
+	font-size: 12px;
+	white-space: nowrap;
+	cursor: pointer;
+}
+.workspace-segment:hover:not(.is-on) {
+	color: var(--fg);
+}
+.workspace-segment.is-on {
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
+	color: var(--accent);
+	font-weight: 600;
+	cursor: default;
+}
+.workspace-body {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+}
+/* Each Panel wraps a child that fills it; clip so children never overflow. */
+.ws-pane {
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+}
+.ws-pane > * {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+}
+/* Resize handles: wide grab area, thin visible line, accent on hover/active. */
+.ws-resize {
+	position: relative;
+	background: transparent;
+	flex: none;
+}
+.ws-resize-v {
+	width: 7px;
+	cursor: col-resize;
+}
+.ws-resize-h {
+	height: 7px;
+	cursor: row-resize;
+}
+.ws-resize-v::after {
+	content: "";
+	position: absolute;
+	inset: 0 3px;
+	background: var(--border);
+}
+.ws-resize-h::after {
+	content: "";
+	position: absolute;
+	inset: 3px 0;
+	background: var(--border);
+}
+.ws-resize:hover::after,
+.ws-resize[data-resize-handle-state="hover"]::after,
+.ws-resize[data-resize-handle-state="drag"]::after {
+	background: var(--accent);
+}
+.workspace-scope {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	flex: none;
+	height: auto;
+	padding: 2px 8px;
+	border: none;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--accent) 16%, transparent);
+	color: var(--accent);
+	font-size: 12px;
+	font-weight: 500;
+}
+.workspace-scope:hover {
+	background: color-mix(in srgb, var(--accent) 28%, transparent);
+	cursor: pointer;
+}
+.workspace-compare {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.workspace-scope.is-on {
+	background: var(--accent);
+	color: var(--accent-fg);
+}
+.workspace-compare-vs {
+	color: var(--muted);
+	font-size: 12px;
+}
+/* PR-review visual cue */
+.ws-fill {
+	height: 100%;
+	min-height: 0;
+	overflow: hidden;
+}
+.is-compare {
+	box-shadow: inset 0 2px 0 var(--accent);
+}
+.compare-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--accent) 18%, transparent);
+	color: var(--accent);
+	font-size: 11px;
+	font-weight: 600;
+}
+
+/* Pull/push buttons carry the ahead/behind count, so the button is a positioning
+   context for the badge. */
+.workspace-sync {
+	position: relative;
+}
+.workspace-sync-count {
+	margin-left: 2px;
+	padding: 0 4px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
+	color: var(--accent);
+	font-size: 10px;
+	font-weight: 600;
+	line-height: 1.5;
+}

@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Braid"
+       Two lanes crossing twice, woven properly: blue passes over at the top
+       crossing, green at the bottom. The dark casing around each ribbon is what
+       makes the over/under read at all. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#28304a"/><stop offset="1" stop-color="#0e1117"/>
+    </linearGradient>
+    <linearGradient id="blueL" gradientUnits="userSpaceOnUse" x1="200" y1="0" x2="824" y2="1024">
+      <stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="greenL" gradientUnits="userSpaceOnUse" x1="824" y1="0" x2="200" y2="1024">
+      <stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#16a34a"/>
+    </linearGradient>
+    <clipPath id="tile"><rect width="1024" height="1024" rx="224"/></clipPath>
+    <clipPath id="topCross"><rect x="0" y="150" width="1024" height="230"/></clipPath>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <g clip-path="url(#tile)">
+    <g fill="none" stroke-linecap="butt">
+      <!-- casing + ribbon, drawn as pairs so each strand carries its own gap -->
+      <path id="b" d="M 340 -60 C 340 200 684 240 684 512 C 684 784 340 824 340 1084" stroke="#0e1117" stroke-width="128"/>
+      <path d="M 340 -60 C 340 200 684 240 684 512 C 684 784 340 824 340 1084" stroke="url(#blueL)" stroke-width="88"/>
+      <path d="M 684 -60 C 684 200 340 240 340 512 C 340 784 684 824 684 1084" stroke="#0e1117" stroke-width="128"/>
+      <path d="M 684 -60 C 684 200 340 240 340 512 C 340 784 684 824 684 1084" stroke="url(#greenL)" stroke-width="88"/>
+      <!-- redraw blue only across the upper crossing, so the weave alternates -->
+      <g clip-path="url(#topCross)">
+        <path d="M 340 -60 C 340 200 684 240 684 512 C 684 784 340 824 340 1084" stroke="#0e1117" stroke-width="128"/>
+        <path d="M 340 -60 C 340 200 684 240 684 512 C 684 784 340 824 340 1084" stroke="url(#blueL)" stroke-width="88"/>
+      </g>
+    </g>
+    <circle cx="684" cy="512" r="96" fill="#0e1117"/><circle cx="684" cy="512" r="62" fill="#f59e0b"/>
+    <circle cx="340" cy="512" r="96" fill="#0e1117"/><circle cx="340" cy="512" r="62" fill="#22c55e"/>
+  </g>
+</svg>

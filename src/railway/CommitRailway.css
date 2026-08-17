@@ -1,0 +1,280 @@
+.railway {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+}
+.railway-error {
+	padding: 16px;
+	color: var(--danger-fg);
+}
+.railway-search {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+	flex: none;
+}
+.railway-search-field {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+}
+.railway-search-icon {
+	position: absolute;
+	left: 10px;
+	color: var(--muted);
+	pointer-events: none;
+}
+.railway-search-input {
+	width: 100%;
+	min-width: 0;
+	height: 28px;
+	padding: 0 10px 0 30px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--bg);
+	color: var(--fg);
+}
+.railway-search-author {
+	flex: 0 1 160px;
+	min-width: 0;
+	height: 28px;
+	padding: 0 10px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--bg);
+	color: var(--fg);
+}
+.railway-search-input:focus,
+.railway-search-author:focus {
+	outline: none;
+	border-color: var(--accent);
+	box-shadow: 0 0 0 3px var(--ring);
+}
+.railway-search-nav {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.railway-search-count {
+	color: var(--muted);
+	font-size: 12px;
+	white-space: nowrap;
+}
+.railway-header {
+	display: grid;
+	grid-template-columns:
+		var(--col-graph) minmax(0, 1fr) var(--col-author) var(--col-commit)
+		var(--col-date);
+	align-items: center;
+	height: 28px;
+	padding: 0 calc(14px + var(--sbw, 0px)) 0 14px;
+	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+	color: var(--muted);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	flex: none;
+}
+.railway-list {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+/* The scrolling area. The working row lives INSIDE it (as row 0) so its lane
+   stays joined to the commits below; a pinned row could not. */
+.railway-list-scroll {
+	flex: 1;
+	min-height: 0;
+}
+/* Reserve scrollbar space so header columns stay aligned with row columns
+   whether or not the list is actually scrollable. */
+.railway-list [data-testid="virtuoso-scroller"] {
+	scrollbar-gutter: stable;
+}
+.railway-col {
+	position: relative;
+	min-width: 0;
+}
+.railway-col-author,
+.railway-col-commit,
+.railway-col-date {
+	/* visible (not hidden): these are the HEADER cells, and hidden would clip
+	   the left half of the absolutely-positioned .railway-col-handle. Header
+	   labels are short and never need ellipsis clipping (unlike the row
+	   cells below, which keep overflow: hidden for that reason). */
+	overflow: visible;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-left: 8px;
+}
+.commit-row {
+	width: 100%;
+	height: 28px; /* must equal ROW_HEIGHT in graphConstants.ts */
+	/* Rows are a fixed height fed to Virtuoso, so anything taller would print
+	   over its neighbours instead of pushing them down. Clip rather than bleed. */
+	overflow: hidden;
+	/* Action row — right-click opens the context menu, don't select text. */
+	-webkit-user-select: none;
+	user-select: none;
+	display: grid;
+	grid-template-columns:
+		var(--col-graph) minmax(0, 1fr) var(--col-author) var(--col-commit)
+		var(--col-date);
+	align-items: center;
+	padding: 0 14px;
+	background: none;
+	border: none;
+	border-bottom: 1px solid var(--border);
+	text-align: left;
+}
+.commit-row:hover {
+	background: var(--surface-hover);
+}
+.commit-row.is-selected {
+	background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+/* A row in a multi-selection. Lighter than the selected row on purpose: exactly
+   one commit is the one the detail panel is showing, and it has to stay findable
+   inside a selection of twenty. */
+.commit-row.is-in-selection {
+	background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.commit-row.is-in-selection.is-selected {
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.commit-row.is-matched {
+	background: color-mix(in srgb, #f59e0b 18%, transparent);
+}
+.commit-row.is-matched.is-selected {
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+/* The commit HEAD points at: the repo's ACTUAL state, which is usually a
+   different row from the one being inspected.
+   None of these touch `background`, which belongs to .is-selected /
+   .is-matched — a row is frequently both checked out AND selected, and both
+   have to stay legible.
+   MULTIPLE cues on purpose. A single edge stripe was easy to miss: it sits at
+   the far left, outside where the eye tracks while reading subjects. So the
+   marker is also carried by the graph node (larger + ringed, see CommitGraph),
+   the bold subject, and the filled ref chip — and because the stripe is not
+   load-bearing, a row with no graph lane is still marked. */
+.commit-row.is-head {
+	box-shadow: inset 4px 0 0 var(--added);
+}
+/* The working row is a real graph node now (injected with HEAD as its parent),
+   so it keeps the standard grid and its lane lines up exactly with the commits
+   below — that alignment is the connection. */
+.commit-row.is-working .working-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	color: var(--accent);
+	font-weight: 600;
+}
+.working-counts {
+	/* The last THREE columns (author + commit + date), counted from the end so
+	   this doesn't depend on whether the row has a graph column. Counting from
+	   the start broke exactly that way: `2 / -1` collided with .commit-desc once
+	   the working row gained its graph cell, and grid pushed the counts into an
+	   implicit second row — which overflowed the row's fixed 28px height and
+	   printed over the row below. */
+	grid-column: -4 / -1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-left: 8px;
+	color: var(--muted);
+	font-size: 12px;
+	text-align: right;
+}
+.commit-graph-cell {
+	display: flex;
+	align-items: stretch;
+	align-self: stretch;
+}
+/* Takes the space between the graph and the author/commit/date columns, and
+   CLIPS its contents so ref chips / subject never overflow. */
+.commit-desc {
+	min-width: 0;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+/* Which branch the uncommitted changes are on. Muted, because the branch is
+   context for the row rather than its subject. */
+.working-on {
+	flex: 0 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: var(--muted);
+	font-size: 11px;
+}
+/* Ref chips shrink (clipping the group) before the subject disappears. */
+.commit-refs {
+	flex: 0 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	overflow: hidden;
+}
+.commit-subject {
+	flex: 1 1 0;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.commit-author,
+.commit-hash,
+.commit-date {
+	position: relative;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	padding-left: 8px;
+	color: var(--muted);
+	font-size: 12px;
+}
+.commit-hash {
+	font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.commit-row.is-head .commit-subject {
+	font-weight: 700;
+}
+/* The short hash too: it's what you'd compare against `git rev-parse HEAD`. */
+.commit-row.is-head .commit-hash {
+	font-weight: 700;
+	color: var(--fg);
+}
+.railway-col-handle {
+	position: absolute;
+	left: -3px;
+	top: 0;
+	width: 7px;
+	height: 100%;
+	cursor: col-resize;
+	user-select: none;
+}
+.railway-col-handle:hover::after {
+	content: "";
+	position: absolute;
+	left: 3px;
+	top: 0;
+	width: 1px;
+	height: 100%;
+	background: var(--accent);
+}

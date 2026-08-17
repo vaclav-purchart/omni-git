@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- omni-git icon — "Railway C"
+       Trunk plus a merged green branch, with the app's own idiom on top: the
+       uncommitted-work row drawn as a dashed lane to a hollow node. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#232936"/>
+      <stop offset="1" stop-color="#12151b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <g fill="none" stroke-width="56" stroke-linecap="round">
+    <path d="M 380 796 C 380 700 620 700 620 604 C 620 508 380 508 380 412" stroke="#22c55e"/>
+    <path d="M 380 412 L 380 796" stroke="#3b82f6"/>
+    <!-- Uncommitted work: dashed, because it is not a commit yet. -->
+    <path d="M 380 412 L 380 236" stroke="#f59e0b" stroke-dasharray="8 88" stroke-width="52"/>
+  </g>
+  <g>
+    <circle cx="620" cy="604" r="80" fill="#12151b"/><circle cx="620" cy="604" r="54" fill="#22c55e"/>
+    <circle cx="380" cy="412" r="80" fill="#12151b"/><circle cx="380" cy="412" r="54" fill="#3b82f6"/>
+    <circle cx="380" cy="796" r="80" fill="#12151b"/><circle cx="380" cy="796" r="54" fill="#3b82f6"/>
+    <circle cx="380" cy="236" r="80" fill="#12151b"/>
+    <circle cx="380" cy="236" r="54" fill="none" stroke="#f59e0b" stroke-width="30"/>
+  </g>
+</svg>
