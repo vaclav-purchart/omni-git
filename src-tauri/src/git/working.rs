@@ -140,6 +140,10 @@ pub enum WorkingSection {
 	Staged,
 	Unstaged,
 	Untracked,
+	/// An unmerged path, mid-merge/rebase/cherry-pick. Not a staged/unstaged
+	/// variant of the same file: the index holds three entries for it, so the
+	/// only diff git will produce is the combined one against both parents.
+	Conflicted,
 }
 
 /// Builds the full `git` argv (starting at `"diff"`, ending with the
@@ -154,7 +158,10 @@ pub fn working_diff_args<'a>(
 	let mut args: Vec<&str> = vec!["diff", "--no-color"];
 	match section {
 		WorkingSection::Staged => args.push("--cached"),
-		WorkingSection::Unstaged => {}
+		// Nothing to add for either: a plain `git diff -- <path>` is what yields
+		// the working-tree diff, and for an unmerged path the same command yields
+		// the combined (`--cc`) diff against both parents.
+		WorkingSection::Unstaged | WorkingSection::Conflicted => {}
 		WorkingSection::Untracked => args.push("--no-index"),
 	}
 	if ignore_whitespace {
@@ -439,6 +446,28 @@ mod tests {
 			working_diff_args(WorkingSection::Unstaged, true, false, "a.txt"),
 			vec!["diff", "--no-color", "-w", "--", "a.txt"]
 		);
+	}
+
+	/// An unmerged path has no staged/unstaged split — the index holds three
+	/// entries, not one. Plain `git diff -- <path>` is the only form that says
+	/// anything: git answers with a COMBINED diff (`diff --cc`) showing the
+	/// conflict against both parents. `--cached` prints only "* Unmerged path".
+	#[test]
+	fn working_diff_args_conflicted_asks_for_the_combined_diff() {
+		assert_eq!(
+			working_diff_args(WorkingSection::Conflicted, false, false, "a.tsx"),
+			vec!["diff", "--no-color", "--", "a.tsx"]
+		);
+	}
+
+	/// Never `--cached` for a conflict: that path prints a one-line notice instead
+	/// of a diff, which is what made a conflicted file look empty.
+	#[test]
+	fn working_diff_args_conflicted_never_uses_the_index() {
+		let args = working_diff_args(WorkingSection::Conflicted, true, true, "a.tsx");
+		assert!(!args.contains(&"--cached"), "went to the index: {args:?}");
+		assert!(!args.contains(&"--no-index"), "compared to /dev/null: {args:?}");
+		assert!(args.contains(&"-w") && args.contains(&"--text"));
 	}
 
 	#[test]

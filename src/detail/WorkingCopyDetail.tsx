@@ -35,6 +35,7 @@ import {
 	toggleRow,
 } from "./fileSelection"
 import { OperationBanner } from "./OperationBanner"
+import { asWorkingSection } from "./workingSection"
 
 type ActiveKey = { section: WorkingSection; path: string } | null
 
@@ -336,7 +337,19 @@ export function WorkingCopyDetail({
 		if (!aliveRef.current) {
 			return
 		}
-		onFileDiffRef.current(r.status === "ok" ? r.data : "", path)
+		if (r.status !== "ok") {
+			// An empty pane is indistinguishable from a file with no changes, which is
+			// how a conflicted file whose diff request was rejected looked like
+			// nothing at all. Report it in the inline banner and leave the pane empty.
+			setActionError(
+				"NonZero" in r.error
+					? r.error.NonZero.stderr
+					: `Could not load the diff for ${path}`,
+			)
+			onFileDiffRef.current("", path)
+			return
+		}
+		onFileDiffRef.current(r.data, path)
 	}
 
 	/**
@@ -819,7 +832,7 @@ export function WorkingCopyDetail({
 					// panel can proceed until they are gone, so they are not a subtype of
 					// "in the commit or not" — they are what you have to deal with first.
 					{
-						key: "Conflicted",
+						key: "Conflicted" satisfies WorkingSection,
 						label: "Conflicted",
 						files: conflictedFiles,
 						group: CONFLICTED,
@@ -828,19 +841,19 @@ export function WorkingCopyDetail({
 					// untracked are subtypes of "is it in the commit or not", and reading
 					// them as three peers is what made the panel hard to scan.
 					{
-						key: "Staged",
+						key: "Staged" satisfies WorkingSection,
 						label: "Staged",
 						files: stagedRows,
 						group: IN_COMMIT,
 					},
 					{
-						key: "Unstaged",
+						key: "Unstaged" satisfies WorkingSection,
 						label: "Unstaged",
 						files: unstagedRows,
 						group: NOT_IN_COMMIT,
 					},
 					{
-						key: "Untracked",
+						key: "Untracked" satisfies WorkingSection,
 						label: "Untracked",
 						files: untracked,
 						group: NOT_IN_COMMIT,
@@ -868,7 +881,13 @@ export function WorkingCopyDetail({
 					// two, and leaving the old selection standing would apply the next
 					// action to rows the user thought they had moved off.
 					setSelected(new Set([rowKey(section, path)]))
-					void openFile(section as WorkingSection, path)
+					const known = asWorkingSection(section)
+					if (known === null) {
+						// Unreachable: every section key below is checked against
+						// WorkingSection at its declaration.
+						return
+					}
+					void openFile(known, path)
 				}}
 				onRowContextMenu={(f, section, e) => {
 					e.preventDefault()
