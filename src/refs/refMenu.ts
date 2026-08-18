@@ -16,6 +16,23 @@ export type RefActions = {
 	onCreateBranch?: (startPoint: string) => void
 	onDiffRef?: (ref: Ref) => void
 	onDeleteRef?: (ref: Ref, force: boolean) => void
+	/** Fast-forward the local branch of the same name. Cannot lose work. */
+	onSyncFromRemote?: (ref: Ref) => void
+	/** Move the local branch onto the remote, discarding local-only commits. */
+	onResetToRemote?: (ref: Ref) => void
+}
+
+/**
+ * The local branch name a remote-tracking ref corresponds to: `origin/develop` is
+ * the remote's view of `develop`.
+ *
+ * Only the FIRST segment is dropped. Remote names cannot contain a slash, while
+ * branch names contain them constantly (`feature/PROJ-12/api`), so splitting on
+ * the last slash — or on every slash — would mangle the common case.
+ */
+export function localNameOf(remoteRef: string): string {
+	const slash = remoteRef.indexOf("/")
+	return slash === -1 ? remoteRef : remoteRef.slice(slash + 1)
 }
 
 /**
@@ -37,7 +54,14 @@ export type RefActions = {
  * (merge/rebase/push/track).
  */
 export function buildRefMenu(ref: Ref, actions: RefActions): MenuItem[] {
-	const { onCheckout, onCreateBranch, onDiffRef, onDeleteRef } = actions
+	const {
+		onCheckout,
+		onCreateBranch,
+		onDiffRef,
+		onDeleteRef,
+		onSyncFromRemote,
+		onResetToRemote,
+	} = actions
 
 	const diffAgainstCurrent: MenuItem = {
 		type: "item",
@@ -74,11 +98,19 @@ export function buildRefMenu(ref: Ref, actions: RefActions): MenuItem[] {
 	}
 
 	if (ref.kind === "remote") {
+		const local = localNameOf(ref.name)
 		return [
 			{
 				type: "item",
 				label: "Checkout as Local Branch",
 				onClick: () => onCheckout?.(ref),
+			},
+			{
+				// No ellipsis: fast-forward only, so there is nothing to warn about. It
+				// either advances the local branch or git refuses and says why.
+				type: "item",
+				label: `Sync ${local} from ${ref.name}`,
+				onClick: () => onSyncFromRemote?.(ref),
 			},
 			createBranchHere,
 			copyName("Copy Remote Branch Name to Clipboard"),
@@ -86,6 +118,15 @@ export function buildRefMenu(ref: Ref, actions: RefActions): MenuItem[] {
 			{ type: "separator" },
 			diffAgainstCurrent,
 			{ type: "separator" },
+			{
+				// Grouped with the deletions, not with the sync above: this is the one
+				// action here that can drop commits, so it belongs among the dangerous
+				// items rather than one mis-click from a safe one.
+				type: "item",
+				label: `Reset ${local} to ${ref.name}…`,
+				danger: true,
+				onClick: () => onResetToRemote?.(ref),
+			},
 			{
 				type: "item",
 				label: `Delete ${ref.name} on remote…`,

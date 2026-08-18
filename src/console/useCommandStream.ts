@@ -5,7 +5,13 @@ import type { CommandResult } from "./CommandOutput"
 /** Titles for a run's three states, chosen when the run starts. */
 export type RunLabels = { running: string; ok: string; error: string }
 
-function newRunId(): string {
+/**
+ * Exported for commands that run in the BACKGROUND: `begin` would display the run
+ * in the output panel, taking over the space the diff occupies, which is wrong for
+ * something triggered by a refresh key. Those still need an id, so the format stays
+ * defined in one place.
+ */
+export function newRunId(): string {
 	return crypto.randomUUID?.() ?? `run-${Date.now()}-${Math.random()}`
 }
 

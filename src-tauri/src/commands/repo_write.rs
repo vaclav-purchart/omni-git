@@ -257,6 +257,15 @@ pub enum BranchOp {
 	Create { name: String, start_point: String, checkout: bool },
 	Delete { name: String, force: bool },
 	DeleteRemote { remote: String, branch: String },
+	/// Fast-forward the CHECKED-OUT branch to a remote-tracking ref. Refuses if the
+	/// two have diverged.
+	FastForward { remote_ref: String },
+	/// Fast-forward a local branch that is not checked out, without switching to
+	/// it. Refuses if the two have diverged.
+	UpdateBranch { remote_ref: String, branch: String },
+	/// Move a local branch onto a remote-tracking ref and switch to it, discarding
+	/// commits only the local branch had. The one destructive member of this set.
+	ResetToRemote { branch: String, remote_ref: String },
 }
 
 fn branch_argv(op: &BranchOp) -> Vec<String> {
@@ -271,6 +280,13 @@ fn branch_argv(op: &BranchOp) -> Vec<String> {
 		BranchOp::Delete { name, force } => b::delete_branch_args(name, *force),
 		BranchOp::DeleteRemote { remote, branch } => {
 			b::delete_remote_branch_args(remote, branch)
+		}
+		BranchOp::FastForward { remote_ref } => b::fast_forward_args(remote_ref),
+		BranchOp::UpdateBranch { remote_ref, branch } => {
+			b::update_branch_args(remote_ref, branch)
+		}
+		BranchOp::ResetToRemote { branch, remote_ref } => {
+			b::reset_branch_to_args(branch, remote_ref)
 		}
 	}
 }
@@ -454,4 +470,49 @@ pub async fn operation_action(
 	})
 	.await
 	.unwrap_or_else(|e| Err(GitError::Spawn(format!("operation task failed: {e}"))))
+}
+
+#[cfg(test)]
+mod branch_op_tests {
+	use super::*;
+
+	/// The op → argv mapping is where a new variant silently runs the wrong
+	/// command, so each of the sync operations is pinned to its argv here.
+	#[test]
+	fn sync_ops_map_to_their_commands() {
+		assert_eq!(
+			branch_argv(&BranchOp::FastForward { remote_ref: "origin/develop".into() }),
+			["merge", "--ff-only", "origin/develop"]
+		);
+		assert_eq!(
+			branch_argv(&BranchOp::UpdateBranch {
+				remote_ref: "origin/develop".into(),
+				branch: "develop".into(),
+			}),
+			["fetch", ".", "origin/develop:develop"]
+		);
+		assert_eq!(
+			branch_argv(&BranchOp::ResetToRemote {
+				branch: "develop".into(),
+				remote_ref: "origin/develop".into(),
+			}),
+			["checkout", "-B", "develop", "origin/develop"]
+		);
+	}
+
+	/// Only ResetToRemote may discard commits. If either sync op ever grows a
+	/// forcing flag, this catches it.
+	#[test]
+	fn the_sync_ops_never_force() {
+		for op in [
+			BranchOp::FastForward { remote_ref: "origin/x".into() },
+			BranchOp::UpdateBranch { remote_ref: "origin/x".into(), branch: "x".into() },
+		] {
+			let args = branch_argv(&op);
+			assert!(
+				!args.iter().any(|a| a == "-f" || a == "--force" || a.starts_with('+')),
+				"forcing flag in {args:?}"
+			);
+		}
+	}
 }
