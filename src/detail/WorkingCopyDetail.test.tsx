@@ -2038,3 +2038,90 @@ describe("an operation in progress", () => {
 		expect(screen.queryByText(/in progress/)).not.toBeInTheDocument()
 	})
 })
+
+describe("WorkingCopyDetail conflicted files", () => {
+	function conflicted(paths: string[]) {
+		repoOperation.mockResolvedValue({
+			status: "ok",
+			data: {
+				kind: "Merge",
+				conflicts: paths,
+				step: null,
+				head_name: null,
+				can_skip: false,
+			},
+		})
+		workingStatus.mockResolvedValue({
+			status: "ok",
+			data: {
+				head: "deadbeef",
+				// git reports an unmerged path in the ordinary status output too.
+				staged: paths.map((path) => ({ status: "UU", path })),
+				unstaged: [],
+				untracked: [],
+			},
+		})
+	}
+
+	// An unmerged path has no staged/unstaged split, so it asks for its own
+	// section. The backend answers that with the combined (`--cc`) diff, which is
+	// the only diff git will produce for one.
+	it("asks for the Conflicted section, and shows the combined diff", async () => {
+		conflicted(["f.tsx"])
+		workingFileDiff.mockResolvedValue({
+			status: "ok",
+			data: "diff --cc f.tsx\n@@@ -1,3 -1,3 +1,7 @@@",
+		})
+		const onFileDiff = vi.fn()
+
+		render(
+			<WorkingCopyDetail
+				repoPath="/repo"
+				onFileDiff={onFileDiff}
+				ignoreWhitespace={false}
+				onMutated={vi.fn()}
+			/>,
+		)
+		const row = (await screen.findByText("f.tsx")).closest("button")
+		await userEvent.setup().click(row as HTMLElement)
+
+		expect(workingFileDiff).toHaveBeenCalledWith(
+			"/repo",
+			"f.tsx",
+			"Conflicted",
+			false,
+			false,
+		)
+		expect(onFileDiff).toHaveBeenLastCalledWith(
+			"diff --cc f.tsx\n@@@ -1,3 -1,3 +1,7 @@@",
+			"f.tsx",
+		)
+	})
+
+	// The reported symptom was a conflicted file with no content and no
+	// explanation. Whatever the cause, a diff that fails to load must say so
+	// rather than render as an empty pane, which is indistinguishable from a file
+	// with no changes.
+	it("reports a diff that could not be loaded instead of blanking the pane", async () => {
+		conflicted(["f.tsx"])
+		workingFileDiff.mockResolvedValue({
+			status: "error",
+			error: { NonZero: { code: 128, stderr: "fatal: could not read f.tsx" } },
+		})
+
+		render(
+			<WorkingCopyDetail
+				repoPath="/repo"
+				onFileDiff={vi.fn()}
+				ignoreWhitespace={false}
+				onMutated={vi.fn()}
+			/>,
+		)
+		const row = (await screen.findByText("f.tsx")).closest("button")
+		await userEvent.setup().click(row as HTMLElement)
+
+		expect(
+			await screen.findByText("fatal: could not read f.tsx"),
+		).toBeInTheDocument()
+	})
+})

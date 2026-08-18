@@ -4,7 +4,12 @@ import { type FileRow, rowKey } from "./FileList"
 /** Paths in the selection, grouped by the section they live in. */
 export type SelectionBySection = Record<WorkingSection, string[]>
 
-const EMPTY: SelectionBySection = { Staged: [], Unstaged: [], Untracked: [] }
+const EMPTY: SelectionBySection = {
+	Conflicted: [],
+	Staged: [],
+	Unstaged: [],
+	Untracked: [],
+}
 
 /**
  * Splits a set of row keys back into per-section path lists, keeping only rows
@@ -24,7 +29,12 @@ export function selectionBySection(
 	if (selected.size === 0) {
 		return EMPTY
 	}
-	const out: SelectionBySection = { Staged: [], Unstaged: [], Untracked: [] }
+	const out: SelectionBySection = {
+		Conflicted: [],
+		Staged: [],
+		Unstaged: [],
+		Untracked: [],
+	}
 	for (const { key, paths } of sections) {
 		out[key] = paths.filter((p) => selected.has(rowKey(key, p)))
 	}
@@ -32,7 +42,12 @@ export function selectionBySection(
 }
 
 export function selectionSize(by: SelectionBySection): number {
-	return by.Staged.length + by.Unstaged.length + by.Untracked.length
+	return (
+		by.Conflicted.length +
+		by.Staged.length +
+		by.Unstaged.length +
+		by.Untracked.length
+	)
 }
 
 /**

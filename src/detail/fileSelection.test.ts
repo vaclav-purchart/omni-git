@@ -21,6 +21,7 @@ describe("selectionBySection", () => {
 		)
 
 		expect(by).toEqual({
+			Conflicted: [],
 			Staged: ["a.ts"],
 			Unstaged: ["d.ts"],
 			Untracked: ["e.ts"],
@@ -71,6 +72,7 @@ describe("selectionActions", () => {
 	// a mixed selection is one command, not two.
 	it("stages unstaged and untracked together", () => {
 		const actions = selectionActions({
+			Conflicted: [],
 			Staged: [],
 			Unstaged: ["c.ts"],
 			Untracked: ["e.ts"],
@@ -83,6 +85,7 @@ describe("selectionActions", () => {
 	// deletion — a different, harsher action that must not hide behind "Discard".
 	it("separates discarding tracked edits from deleting untracked files", () => {
 		const actions = selectionActions({
+			Conflicted: [],
 			Staged: [],
 			Unstaged: ["c.ts"],
 			Untracked: ["e.ts"],
@@ -94,6 +97,7 @@ describe("selectionActions", () => {
 
 	it("offers nothing for an empty selection", () => {
 		const actions = selectionActions({
+			Conflicted: [],
 			Staged: [],
 			Unstaged: [],
 			Untracked: [],
@@ -107,6 +111,7 @@ describe("selectionActions", () => {
 
 	it("offers both directions when the selection spans staged and unstaged", () => {
 		const actions = selectionActions({
+			Conflicted: [],
 			Staged: ["a.ts"],
 			Unstaged: ["c.ts"],
 			Untracked: [],
