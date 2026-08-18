@@ -442,6 +442,65 @@ describe("refresh shortcut", () => {
 	})
 })
 
+// The predicate is unit-tested in workspace/shortcuts.test.ts; these cover the
+// WIRING, which nothing did — a listener that never got attached, or a key
+// swallowed before it reached the window, would have looked exactly like the
+// palette being broken.
+describe("command palette shortcut", () => {
+	beforeEach(() => {
+		resetSettings()
+		setSetting(
+			"last-repo",
+			JSON.stringify({ id: "1", name: "omni-git", path: "/code/omni-git" }),
+		)
+	})
+
+	it("opens the palette on Cmd+Shift+P", async () => {
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+
+		fireEvent.keyDown(window, {
+			code: "KeyP",
+			key: "P",
+			metaKey: true,
+			shiftKey: true,
+		})
+
+		expect(
+			await screen.findByRole("textbox", { name: "Git command" }),
+		).toBeInTheDocument()
+	})
+
+	it("opens the palette on Ctrl+Shift+P", async () => {
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+
+		fireEvent.keyDown(window, {
+			code: "KeyP",
+			key: "P",
+			ctrlKey: true,
+			shiftKey: true,
+		})
+
+		expect(
+			await screen.findByRole("textbox", { name: "Git command" }),
+		).toBeInTheDocument()
+	})
+
+	// Shift is what keeps the palette clear of the webview's print accelerator.
+	// Reported as "the palette is broken" — it was the wrong combination.
+	it("ignores a plain Cmd+P", async () => {
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+
+		fireEvent.keyDown(window, { code: "KeyP", key: "p", metaKey: true })
+
+		expect(
+			screen.queryByRole("textbox", { name: "Git command" }),
+		).not.toBeInTheDocument()
+	})
+})
+
 describe("bottom-bar terminal and help", () => {
 	beforeEach(() => {
 		resetSettings()

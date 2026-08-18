@@ -4,12 +4,16 @@
 	"version": "0.1.0",
 	"type": "module",
 	"scripts": {
+		"bindings": "cd src-tauri && cargo test --lib export_bindings",
+		"predev": "npm run bindings",
 		"dev": "vite",
+		"prebuild": "npm run bindings",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
 		"tauri": "tauri",
 		"lint": "biome check .",
 		"format": "biome format --write .",
+		"pretest": "npm run bindings",
 		"test": "vitest run"
 	},
 	"dependencies": {
