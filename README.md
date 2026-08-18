@@ -173,6 +173,13 @@ src-tauri/            Rust backend
   `prebuild` and `pretest` hooks run `scripts/bindings.mjs --if-missing`, which generates it only
   when absent — so it can go stale. Run `npm run bindings` after changing the Rust command
   surface (`npm run tauri dev` also rewrites it on app start); never edit it by hand.
+- Generation goes through the app binary's `--export-bindings` flag, not a test, and not a second
+  bin target (tauri bundles the package's binary, and a second one displaces the real app).
+  `tauri-build` embeds the Windows `Microsoft.Windows.Common-Controls` v6 manifest through
+  `embed-resource`, which emits `cargo:rustc-link-arg-bins` — bin targets only. Without that
+  manifest an executable gets comctl32 v5, where `TaskDialogIndirect` does not exist, and the
+  Windows loader kills it with `STATUS_ENTRYPOINT_NOT_FOUND` before `main`. The same reason means
+  **`cargo test` cannot run on Windows** in this crate at all; run the Rust tests on macOS/Linux.
 - Each git area gets its own module under `src-tauri/src/git/`, and git is invoked as a
   subprocess with an explicit environment — no libgit2.
 - Tests are colocated with what they test (`Foo.tsx` next to `Foo.test.tsx`). Pure logic is

@@ -14,11 +14,28 @@ fn specta_builder() -> Builder {
         .events(collect_events![crate::git::run::GitConsoleEntry, crate::watcher::RepoChanged, crate::git::stream::CommandChunk, crate::git::stream::CommandDone])
 }
 
+/// Where the generated bindings live, resolved from the crate root so it never
+/// depends on the working directory the generator happens to be run from.
+const BINDINGS_PATH: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../src/ipc/bindings.ts");
+
+/// Writes the TypeScript IPC bindings that the frontend imports.
+///
+/// Public so the app binary can call it via `--export-bindings` (see `main.rs`)
+/// rather than only a test. On Windows the application manifest that `tauri-build`
+/// embeds — the one declaring Common Controls v6, without which `comctl32`'s
+/// `TaskDialogIndirect` is missing — is applied to bin targets only. A `cargo test`
+/// harness therefore could not load at all, dying with STATUS_ENTRYPOINT_NOT_FOUND
+/// before `main`.
+pub fn export_bindings() {
+    specta_builder()
+        .export(typescript_config(), BINDINGS_PATH)
+        .expect("failed to export typescript bindings");
+}
+
 /// The generated bindings include a couple of items (e.g. the events proxy
 /// helper) that are unused while there are no events registered yet. Silence
 /// TypeScript's `noUnusedLocals`/`noUnusedParameters` for this generated file
 /// via a header comment rather than relaxing the project-wide tsconfig.
-#[cfg(any(debug_assertions, test))]
 fn typescript_config() -> specta_typescript::Typescript {
     specta_typescript::Typescript::default()
         .header("// @ts-nocheck\n")
@@ -34,9 +51,7 @@ pub fn run() {
     let builder = specta_builder();
 
     #[cfg(debug_assertions)]
-    builder
-        .export(typescript_config(), "../src/ipc/bindings.ts")
-        .expect("failed to export typescript bindings");
+    export_bindings();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -85,12 +100,11 @@ pub fn run() {
 
 #[cfg(test)]
 mod tests {
-    use super::{specta_builder, typescript_config};
-
+    /// Same code path as `main.rs`'s `--export-bindings`, so the two cannot drift.
+    /// Note this test cannot RUN on Windows — see `export_bindings` — which is why
+    /// the build drives the binary instead.
     #[test]
     fn export_bindings() {
-        specta_builder()
-            .export(typescript_config(), "../src/ipc/bindings.ts")
-            .expect("failed to export typescript bindings");
+        super::export_bindings();
     }
 }

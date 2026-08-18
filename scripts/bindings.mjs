@@ -3,10 +3,10 @@
 // The bindings are produced by RUNNING a Rust test that walks the command
 // registry, so generating them needs a cargo toolchain AND an executable that
 // links the whole tauri stack — including the platform webview. That is more
-// than a frontend typecheck should insist on, and on Windows that executable
-// can fail to start outright (STATUS_ENTRYPOINT_NOT_FOUND) even though it
-// compiled. So `--if-missing` accepts an existing file as-is, and a generation
-// failure is only fatal when there is no file to fall back on.
+// than a frontend typecheck should insist on, and it can fail for reasons that
+// have nothing to do with the frontend. So `--if-missing` accepts an existing
+// file as-is, and a generation failure is only fatal when there is no file to
+// fall back on.
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import path from "node:path"
@@ -24,7 +24,9 @@ if (ifMissing && existsSync(target)) {
 	process.exit(0)
 }
 
-const result = spawnSync("cargo", ["test", "--lib", "export_bindings"], {
+// The app binary with a flag, not `cargo test`: see src-tauri/src/main.rs for why
+// a test harness cannot run this on Windows, and why this isn't a second bin.
+const result = spawnSync("cargo", ["run", "--", "--export-bindings"], {
 	cwd: path.join(root, "src-tauri"),
 	stdio: "inherit",
 	// cargo resolves through a shim on Windows.
