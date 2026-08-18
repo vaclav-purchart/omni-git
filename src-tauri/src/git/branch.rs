@@ -49,6 +49,44 @@ pub fn create_branch_args(name: &str, start_point: &str, checkout: bool) -> Vec<
 	}
 }
 
+/// `git merge --ff-only <remote_ref>`, for syncing the branch that is currently
+/// checked out.
+///
+/// `--ff-only` is the whole point: it advances the branch when the remote is
+/// simply ahead and REFUSES when the two have diverged, rather than quietly
+/// creating a merge commit. A refusal is git's own message and reaches the output
+/// panel, which is the only thing that explains the situation to the user.
+pub fn fast_forward_args(remote_ref: &str) -> Vec<String> {
+	vec!["merge".into(), "--ff-only".into(), remote_ref.to_string()]
+}
+
+/// Fast-forwards a local branch that is NOT checked out, without switching to it.
+///
+/// Fetching from `.` — this repository — with a plain `<src>:<dst>` refspec updates
+/// `refs/heads/<branch>` from the already-fetched remote-tracking ref. Without a
+/// leading `+` the update is fast-forward-only, so a diverged branch is refused
+/// exactly as `--ff-only` refuses one. This is the only way to move a branch
+/// safely while staying where you are; `git merge` would need it checked out, and
+/// `git branch -f` would move it with no divergence check at all.
+pub fn update_branch_args(remote_ref: &str, branch: &str) -> Vec<String> {
+	vec!["fetch".into(), ".".into(), format!("{remote_ref}:{branch}")]
+}
+
+/// `git checkout -B <branch> <remote_ref>`: point the branch at the remote tip and
+/// switch to it.
+///
+/// The escape hatch for a diverged branch, and the only one of these three that
+/// can lose work — commits only the local branch had become unreachable. Kept as a
+/// separate, confirmed action for the same reason `-D` is separate from `-d`.
+pub fn reset_branch_to_args(branch: &str, remote_ref: &str) -> Vec<String> {
+	vec![
+		"checkout".into(),
+		"-B".into(),
+		branch.to_string(),
+		remote_ref.to_string(),
+	]
+}
+
 /// `-d` refuses to delete a branch whose commits aren't merged anywhere; `-D`
 /// does it anyway. Keeping them separate means the safe one is the default and
 /// losing commits is always an explicit choice.
@@ -188,6 +226,49 @@ mod tests {
 				"no mode flag in {args:?}"
 			);
 		}
+	}
+
+	/// The safe sync: `--ff-only` refuses anything that would need a merge commit
+	/// or a rebase, so a diverged branch is reported rather than rewritten.
+	#[test]
+	fn fast_forward_refuses_to_merge() {
+		assert_eq!(
+			fast_forward_args("origin/develop"),
+			["merge", "--ff-only", "origin/develop"]
+		);
+	}
+
+	/// Updating a branch that ISN'T checked out, without switching to it. Fetching
+	/// from `.` (this repo) into a local branch is fast-forward-only unless the
+	/// refspec is prefixed with `+`, which is exactly the guarantee wanted here.
+	#[test]
+	fn update_branch_fetches_into_it_without_forcing() {
+		assert_eq!(
+			update_branch_args("origin/develop", "develop"),
+			["fetch", ".", "origin/develop:develop"]
+		);
+	}
+
+	/// No leading `+` on the refspec, ever: that would force the update and drop
+	/// local-only commits behind a menu item that promises a sync.
+	#[test]
+	fn update_branch_never_forces() {
+		let args = update_branch_args("origin/develop", "develop");
+		assert!(
+			!args.iter().any(|a| a.starts_with('+') || a.contains(":+")),
+			"forced refspec in {args:?}"
+		);
+	}
+
+	/// The escape hatch for a diverged branch. `-B` moves the branch to the remote
+	/// tip and switches to it, discarding local-only commits — which is why it is
+	/// a separate, confirmed action rather than a fallback for the sync above.
+	#[test]
+	fn reset_branch_to_remote_moves_and_switches() {
+		assert_eq!(
+			reset_branch_to_args("develop", "origin/develop"),
+			["checkout", "-B", "develop", "origin/develop"]
+		);
 	}
 
 	#[test]

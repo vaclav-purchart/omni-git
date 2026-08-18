@@ -21,7 +21,7 @@ import {
 } from "react-resizable-panels"
 import { CommandOutput } from "../console/CommandOutput"
 import { GitConsole } from "../console/GitConsole"
-import { useCommandStream } from "../console/useCommandStream"
+import { newRunId, useCommandStream } from "../console/useCommandStream"
 import { useGitConsole } from "../console/useGitConsole"
 import { CommitDetail } from "../detail/CommitDetail"
 import { CompareDetail } from "../detail/CompareDetail"
@@ -42,7 +42,7 @@ import { CommandPalette } from "../palette/CommandPalette"
 import { useCommandHistory } from "../palette/useCommandHistory"
 import { CommitRailway } from "../railway/CommitRailway"
 import { WORKING_HASH } from "../railway/working"
-import type { RefActions } from "../refs/refMenu"
+import { localNameOf, type RefActions } from "../refs/refMenu"
 import { getSetting, panelStorage } from "../settings/settings"
 import { Sidebar } from "../sidebar/Sidebar"
 import { useRepoRefs } from "../sidebar/useRepoRefs"
@@ -167,10 +167,54 @@ export function Workspace({
 		setRefreshKey((k) => k + 1)
 	}
 
-	// The window-level listener is bound once, so it reads `refresh` through a ref
-	// rather than closing over the first render's copy.
-	const refreshRef = useRef(refresh)
-	refreshRef.current = refresh
+	// True while a refresh-triggered fetch is running, so holding the key down
+	// cannot stack network calls. A ref, not state: nothing renders from it.
+	const fetchingRef = useRef(false)
+
+	/**
+	 * What Cmd/Ctrl+R and the Refresh button do: pick up changes from disk AND from
+	 * the remote.
+	 *
+	 * The local re-read runs first and unconditionally, so the key stays instant
+	 * even offline. The fetch NEVER prunes — this is a reflex key, and `--prune`
+	 * deletes remote-tracking refs. Only the explicit Fetch dialog may do that.
+	 */
+	function reload() {
+		refresh()
+		if (fetchingRef.current) {
+			return
+		}
+		fetchingRef.current = true
+		// A run id WITHOUT `beginRun`: that would display the run in the output
+		// panel, which occupies the same space as the diff. A routine refresh
+		// belongs in the git console, not in front of what you were reading.
+		void commands
+			.fetch(repo.path, false, newRunId())
+			.then((r) => {
+				if (r.status !== "ok") {
+					// Silence would leave the remote data quietly stale.
+					showOutput({
+						title: "Fetch failed",
+						output:
+							"NonZero" in r.error
+								? r.error.NonZero.stderr
+								: String(r.error.Spawn),
+						status: "error",
+					})
+					return
+				}
+				// New remote refs move the ahead/behind counts and the sidebar.
+				refresh()
+			})
+			.finally(() => {
+				fetchingRef.current = false
+			})
+	}
+
+	// The window-level listener is bound once, so it reads these through refs
+	// rather than closing over the first render's copies.
+	const refreshRef = useRef(reload)
+	refreshRef.current = reload
 	// Same reason: the copy-path shortcut is bound once and must always see the
 	// file that is open NOW.
 	const diffPathRef = useRef(diffPath)
@@ -350,6 +394,9 @@ export function Workspace({
 		ref: { name: string; kind: "local" | "remote" | "tag" }
 		force: boolean
 	} | null>(null)
+	// The remote-tracking ref a local branch is about to be reset onto. The local
+	// name is derived from it, so one string is the whole state.
+	const [confirmResetTo, setConfirmResetTo] = useState<string | null>(null)
 	// The message is fetched when the dialog opens rather than carried from the
 	// row: the railway only has `%s`, and rewording from the subject alone would
 	// silently drop every commit's body.
@@ -615,14 +662,52 @@ export function Workspace({
 			error: `Could not check out ${ref.name}`,
 		}
 		if (ref.kind === "remote") {
-			// Creates a local branch tracking it, which is what "checkout" means for
-			// a remote-tracking ref.
-			void runBranchOp(label, { kind: "CheckoutRemote", remote_ref: ref.name })
+			const local = localNameOf(ref.name)
+			if ((refs?.local ?? []).some((b) => b.name === local)) {
+				// A local branch of that name already exists, so `checkout --track`
+				// would be refused outright ("a branch named 'x' already exists").
+				// Switching to it is what checkout means once it is there; bringing it
+				// up to date is the separate Sync action.
+				void runBranchOp(label, { kind: "Checkout", target: local })
+			} else {
+				// Creates a local branch tracking it, which is what "checkout" means
+				// for a remote-tracking ref.
+				void runBranchOp(label, {
+					kind: "CheckoutRemote",
+					remote_ref: ref.name,
+				})
+			}
 		} else if (ref.kind === "tag") {
 			// A tag isn't a branch, so checking it out detaches HEAD.
 			void runBranchOp(label, { kind: "CheckoutCommit", commit: ref.name })
 		} else {
 			void runBranchOp(label, { kind: "Checkout", target: ref.name })
+		}
+	}
+
+	/**
+	 * Fast-forwards the local branch behind a remote-tracking ref.
+	 *
+	 * Which command that takes depends on whether the branch is checked out, and
+	 * only this component knows: `git merge --ff-only` acts on HEAD, so for any
+	 * other branch the equivalent is fetching into it from this same repository,
+	 * which updates it without moving HEAD. Both refuse a diverged branch.
+	 */
+	function syncFromRemote(ref: { name: string }) {
+		const local = localNameOf(ref.name)
+		const label = {
+			running: `Syncing ${local} from ${ref.name}…`,
+			ok: `Synced ${local} from ${ref.name}`,
+			error: `Could not sync ${local} from ${ref.name}`,
+		}
+		if (refs?.current === local) {
+			void runBranchOp(label, { kind: "FastForward", remote_ref: ref.name })
+		} else {
+			void runBranchOp(label, {
+				kind: "UpdateBranch",
+				remote_ref: ref.name,
+				branch: local,
+			})
 		}
 	}
 
@@ -632,6 +717,8 @@ export function Workspace({
 		onCheckout: checkoutRef,
 		onCreateBranch: (startPoint) => setPrompt({ startPoint }),
 		onDeleteRef: (ref, force) => setConfirmDelete({ ref, force }),
+		onSyncFromRemote: syncFromRemote,
+		onResetToRemote: (ref) => setConfirmResetTo(ref.name),
 		onDiffRef: (ref) => {
 			dismissOutput()
 			// Compare THIS ref (branch or tag) against its base — so the clicked ref
@@ -880,9 +967,9 @@ export function Workspace({
 					<button
 						type="button"
 						className="btn btn-icon"
-						title={`Refresh (${refreshShortcutLabel(isMac)})`}
+						title={`Refresh and fetch (${refreshShortcutLabel(isMac)})`}
 						aria-label="Refresh"
-						onClick={refresh}
+						onClick={reload}
 					>
 						<ArrowClockwise />
 					</button>
@@ -1263,6 +1350,35 @@ export function Workspace({
 					} else {
 						void runBranchOp(label, { kind: "Delete", name: ref.name, force })
 					}
+				}}
+			/>
+			{/* Separate from the delete confirmation above: this one is reached from
+			    the Sync group, and its warning is about local commits rather than
+			    about a branch disappearing. */}
+			<ConfirmDialog
+				open={confirmResetTo !== null}
+				message={
+					confirmResetTo === null
+						? ""
+						: `Reset ${localNameOf(confirmResetTo)} to ${confirmResetTo}? Commits only on the local branch will be lost.`
+				}
+				confirmLabel="Reset"
+				onCancel={() => setConfirmResetTo(null)}
+				onConfirm={() => {
+					if (confirmResetTo === null) {
+						return
+					}
+					const remoteRef = confirmResetTo
+					setConfirmResetTo(null)
+					const local = localNameOf(remoteRef)
+					void runBranchOp(
+						{
+							running: `Resetting ${local} to ${remoteRef}…`,
+							ok: `Reset ${local} to ${remoteRef}`,
+							error: `Could not reset ${local} to ${remoteRef}`,
+						},
+						{ kind: "ResetToRemote", branch: local, remote_ref: remoteRef },
+					)
 				}}
 			/>
 		</div>

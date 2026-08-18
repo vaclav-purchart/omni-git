@@ -501,6 +501,142 @@ describe("command palette shortcut", () => {
 	})
 })
 
+// Cmd/Ctrl+R and the toolbar Refresh button pick up BOTH kinds of change: what
+// happened on disk, and what happened on the remote. The fetch is deliberately
+// prune-free — this is the reflex key, so it must not be able to remove anything.
+describe("refresh also fetches remote changes", () => {
+	beforeEach(() => {
+		resetSettings()
+		setSetting(
+			"last-repo",
+			JSON.stringify({ id: "1", name: "omni-git", path: "/code/omni-git" }),
+		)
+		vi.mocked(commands.fetch).mockClear()
+	})
+
+	afterEach(() => {
+		vi.mocked(commands.fetch).mockResolvedValue({
+			status: "ok",
+			data: true,
+		} as Awaited<ReturnType<typeof commands.fetch>>)
+	})
+
+	it("fetches on Cmd/Ctrl+R", async () => {
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+
+		fireEvent.keyDown(window, { code: "KeyR", metaKey: true })
+
+		await waitFor(() =>
+			expect(commands.fetch).toHaveBeenCalledWith(
+				"/code/omni-git",
+				false,
+				expect.any(String),
+			),
+		)
+	})
+
+	// The Fetch dialog remembers a prune preference for the explicit fetch. The
+	// refresh path must ignore it: pruning drops remote-tracking refs, and this key
+	// gets pressed reflexively.
+	it("never prunes, even when the Fetch dialog remembers pruning", async () => {
+		setSetting("fetch-mode", JSON.stringify("prune"))
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+
+		fireEvent.keyDown(window, { code: "KeyR", metaKey: true })
+
+		await waitFor(() => expect(commands.fetch).toHaveBeenCalled())
+		expect(commands.fetch).toHaveBeenCalledWith(
+			"/code/omni-git",
+			false,
+			expect.any(String),
+		)
+	})
+
+	it("fetches from the toolbar Refresh button too", async () => {
+		render(<App />)
+		await userEvent.click(await screen.findByLabelText("Refresh"))
+
+		await waitFor(() =>
+			expect(commands.fetch).toHaveBeenCalledWith(
+				"/code/omni-git",
+				false,
+				expect.any(String),
+			),
+		)
+	})
+
+	// Holding the key down must not stack network calls.
+	it("does not start a second fetch while one is in flight", async () => {
+		let finish: (v: unknown) => void = () => {}
+		vi.mocked(commands.fetch).mockReturnValue(
+			new Promise((res) => {
+				finish = res as (v: unknown) => void
+			}) as ReturnType<typeof commands.fetch>,
+		)
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+
+		fireEvent.keyDown(window, { code: "KeyR", metaKey: true })
+		await waitFor(() => expect(commands.fetch).toHaveBeenCalledTimes(1))
+		fireEvent.keyDown(window, { code: "KeyR", metaKey: true })
+
+		expect(commands.fetch).toHaveBeenCalledTimes(1)
+		finish({ status: "ok", data: true })
+	})
+
+	// The local re-read is what makes the key feel instant, so it must not wait for
+	// the network.
+	it("re-reads local state without waiting for the fetch", async () => {
+		vi.mocked(commands.fetch).mockReturnValue(
+			new Promise(() => {}) as ReturnType<typeof commands.fetch>,
+		)
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+		await waitFor(() => expect(commands.listRefs).toHaveBeenCalled())
+		const before = vi.mocked(commands.listRefs).mock.calls.length
+
+		fireEvent.keyDown(window, { code: "KeyR", metaKey: true })
+
+		await waitFor(() =>
+			expect(vi.mocked(commands.listRefs).mock.calls.length).toBeGreaterThan(
+				before,
+			),
+		)
+	})
+
+	// Offline or unauthenticated, the remote data is silently stale otherwise.
+	it("reports a failed fetch", async () => {
+		vi.mocked(commands.fetch).mockResolvedValueOnce({
+			status: "error",
+			error: {
+				NonZero: { code: 128, stderr: "fatal: unable to access remote" },
+			},
+		} as Awaited<ReturnType<typeof commands.fetch>>)
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+
+		fireEvent.keyDown(window, { code: "KeyR", metaKey: true })
+
+		expect(
+			await screen.findByText(/unable to access remote/),
+		).toBeInTheDocument()
+	})
+
+	// A successful refresh must not take over the panel the diff lives in — that
+	// would make the key unusable while reading a diff.
+	it("stays quiet on a successful fetch", async () => {
+		render(<App />)
+		await screen.findByTitle("/code/omni-git")
+
+		fireEvent.keyDown(window, { code: "KeyR", metaKey: true })
+		await waitFor(() => expect(commands.fetch).toHaveBeenCalled())
+
+		expect(screen.queryByText("Fetching…")).not.toBeInTheDocument()
+	})
+})
+
 describe("bottom-bar terminal and help", () => {
 	beforeEach(() => {
 		resetSettings()
@@ -1441,6 +1577,183 @@ describe("copy the open file's path", () => {
 		expect(
 			await screen.findByRole("menuitem", { name: /Copy Path To Clipboard/ }),
 		).toHaveTextContent(/⌘⇧C|Ctrl\+Shift\+C/)
+	})
+})
+
+// Syncing a local branch from its remote-tracking ref. The reported bug: with a
+// local `feature` already present, "Checkout as Local Branch" ran
+// `git checkout --track origin/feature` and git refused — "a branch named
+// 'feature' already exists" — with no way to bring the local branch up to date.
+describe("syncing a local branch from its remote", () => {
+	const DECORATED = {
+		hash: "c1",
+		parents: [],
+		author_name: "A",
+		author_email: "a@x",
+		timestamp_ms: 0,
+		refs: ["HEAD -> main", "refs/remotes/origin/feature"],
+		subject: "a commit",
+	}
+
+	/** `local` becomes the repo's local branch list; `current` the checked-out one. */
+	function withLocalBranches(names: string[], current: string) {
+		vi.mocked(commands.listRefs).mockResolvedValue({
+			status: "ok",
+			data: {
+				local: names.map((name) => ({
+					name,
+					is_head: name === current,
+					upstream: `origin/${name}`,
+					tip: "h1",
+					ahead: 0,
+					behind: 3,
+					upstream_gone: false,
+				})),
+				remotes: [{ name: "origin/feature", remote: "origin", tip: "h2" }],
+				tags: [],
+				current,
+			},
+		} as Awaited<ReturnType<typeof commands.listRefs>>)
+	}
+
+	beforeEach(() => {
+		resetSettings()
+		setSetting(
+			"last-repo",
+			JSON.stringify({ id: "1", name: "omni-git", path: "/code/omni-git" }),
+		)
+		vi.mocked(commands.branchOp).mockClear()
+		vi.mocked(commands.logCommits).mockResolvedValue({
+			status: "ok",
+			data: [DECORATED],
+		} as Awaited<ReturnType<typeof commands.logCommits>>)
+	})
+
+	afterEach(restoreDefaultLog)
+
+	async function openRemoteBadgeMenu() {
+		render(<App />)
+		const badge = (await screen.findAllByText("origin/feature")).find((el) =>
+			el.classList.contains("commit-ref"),
+		)
+		expect(badge).toBeDefined()
+		fireEvent.contextMenu(badge as Element)
+		return userEvent.setup()
+	}
+
+	// THE bug. A local branch of that name already exists, so tracking it again is
+	// what git refuses; switching to the branch is what the user meant.
+	it("switches to the existing local branch instead of tracking it again", async () => {
+		withLocalBranches(["main", "feature"], "main")
+		const user = await openRemoteBadgeMenu()
+
+		await user.click(screen.getByText("Checkout as Local Branch"))
+
+		expect(commands.branchOp).toHaveBeenCalledWith(
+			"/code/omni-git",
+			{ kind: "Checkout", target: "feature" },
+			expect.any(String),
+		)
+	})
+
+	// With no local branch yet, tracking IS correct and must not regress.
+	it("still tracks the remote when no local branch exists", async () => {
+		withLocalBranches(["main"], "main")
+		const user = await openRemoteBadgeMenu()
+
+		await user.click(screen.getByText("Checkout as Local Branch"))
+
+		expect(commands.branchOp).toHaveBeenCalledWith(
+			"/code/omni-git",
+			{ kind: "CheckoutRemote", remote_ref: "origin/feature" },
+			expect.any(String),
+		)
+	})
+
+	// `git merge` needs the branch checked out, so it can only be used when it is.
+	it("fast-forwards through merge when the branch is checked out", async () => {
+		withLocalBranches(["main", "feature"], "feature")
+		const user = await openRemoteBadgeMenu()
+
+		await user.click(screen.getByText("Sync feature from origin/feature"))
+
+		expect(commands.branchOp).toHaveBeenCalledWith(
+			"/code/omni-git",
+			{ kind: "FastForward", remote_ref: "origin/feature" },
+			expect.any(String),
+		)
+	})
+
+	// Not checked out: update it in place rather than switching to it, since the
+	// user asked to sync a branch, not to leave the one they are on.
+	it("updates the branch in place when it is not checked out", async () => {
+		withLocalBranches(["main", "feature"], "main")
+		const user = await openRemoteBadgeMenu()
+
+		await user.click(screen.getByText("Sync feature from origin/feature"))
+
+		expect(commands.branchOp).toHaveBeenCalledWith(
+			"/code/omni-git",
+			{
+				kind: "UpdateBranch",
+				remote_ref: "origin/feature",
+				branch: "feature",
+			},
+			expect.any(String),
+		)
+	})
+
+	// The destructive one, so it must be confirmed rather than run on the click.
+	it("confirms before resetting the local branch onto the remote", async () => {
+		withLocalBranches(["main", "feature"], "main")
+		const user = await openRemoteBadgeMenu()
+
+		await user.click(screen.getByText("Reset feature to origin/feature…"))
+		expect(commands.branchOp).not.toHaveBeenCalled()
+
+		await user.click(screen.getByRole("button", { name: "Reset" }))
+
+		expect(commands.branchOp).toHaveBeenCalledWith(
+			"/code/omni-git",
+			{
+				kind: "ResetToRemote",
+				branch: "feature",
+				remote_ref: "origin/feature",
+			},
+			expect.any(String),
+		)
+	})
+
+	it("does nothing when the reset confirmation is cancelled", async () => {
+		withLocalBranches(["main", "feature"], "main")
+		const user = await openRemoteBadgeMenu()
+
+		await user.click(screen.getByText("Reset feature to origin/feature…"))
+		await user.click(screen.getByRole("button", { name: "Cancel" }))
+
+		expect(commands.branchOp).not.toHaveBeenCalled()
+	})
+
+	// git's refusal is the only thing that explains a diverged branch, so it has to
+	// reach the output panel rather than failing silently.
+	it("shows git's refusal when the branch has diverged", async () => {
+		withLocalBranches(["main", "feature"], "feature")
+		vi.mocked(commands.branchOp).mockResolvedValueOnce({
+			status: "error",
+			error: {
+				NonZero: {
+					code: 128,
+					stderr: "fatal: Not possible to fast-forward, aborting.",
+				},
+			},
+		} as Awaited<ReturnType<typeof commands.branchOp>>)
+		const user = await openRemoteBadgeMenu()
+
+		await user.click(screen.getByText("Sync feature from origin/feature"))
+
+		expect(
+			await screen.findByText(/Not possible to fast-forward/),
+		).toBeInTheDocument()
 	})
 })
 
