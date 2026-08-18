@@ -4,16 +4,16 @@
 	"version": "0.1.0",
 	"type": "module",
 	"scripts": {
-		"bindings": "cd src-tauri && cargo test --lib export_bindings",
-		"predev": "npm run bindings",
+		"bindings": "node scripts/bindings.mjs",
+		"predev": "node scripts/bindings.mjs --if-missing",
 		"dev": "vite",
-		"prebuild": "npm run bindings",
+		"prebuild": "node scripts/bindings.mjs --if-missing",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
 		"tauri": "tauri",
 		"lint": "biome check .",
 		"format": "biome format --write .",
-		"pretest": "npm run bindings",
+		"pretest": "node scripts/bindings.mjs --if-missing",
 		"test": "vitest run"
 	},
 	"dependencies": {
