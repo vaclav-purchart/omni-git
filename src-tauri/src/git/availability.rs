@@ -9,7 +9,9 @@ pub struct GitStatus {
 
 /// Runs `git --version`. `available` is true only on a zero exit with parseable output.
 pub fn check_git() -> GitStatus {
-	match Command::new("git").arg("--version").output() {
+	let mut cmd = Command::new("git");
+	crate::sys::hide_console(&mut cmd);
+	match cmd.arg("--version").output() {
 		Ok(out) if out.status.success() => {
 			let version = String::from_utf8_lossy(&out.stdout)
 				.trim()

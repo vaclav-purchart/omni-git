@@ -42,6 +42,7 @@ fn now_ms() -> i64 {
 /// to a homebrew/nvm/volta tool and dies with "command not found".
 pub(crate) fn git_command(repo_path: &str, args: &[&str]) -> Command {
 	let mut cmd = Command::new("git");
+	crate::sys::hide_console(&mut cmd);
 	cmd.env("GIT_OPTIONAL_LOCKS", "0");
 	// There is no terminal behind these processes, so a git that decides to prompt
 	// for credentials would block forever with nothing to read. Failing fast with
