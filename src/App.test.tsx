@@ -159,6 +159,12 @@ vi.mock("./ipc/bindings", () => ({
 			.mockResolvedValue({ status: "ok", data: "a commit" }),
 		fileDiff: vi.fn().mockResolvedValue({ status: "ok", data: "@@ -1 +1 @@" }),
 		saveSettings: vi.fn().mockResolvedValue({ status: "ok", data: null }),
+		// No remote by default: the remote-file-URL items are then absent, which
+		// keeps every menu assertion here about the items it is actually testing.
+		remoteUrl: vi
+			.fn()
+			.mockResolvedValue({ status: "error", error: { Spawn: "no remote" } }),
+		commitOnRemote: vi.fn().mockResolvedValue({ status: "ok", data: false }),
 	},
 	events: {
 		gitConsoleEntry: { listen: vi.fn().mockResolvedValue(() => {}) },

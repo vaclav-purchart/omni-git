@@ -5,23 +5,45 @@ import type { CommitSummary } from "../ipc/bindings"
 import { __resetSettingsForTests as resetSettings } from "../settings/settings"
 import { CommitDetail } from "./CommitDetail"
 
-const { commitFiles, fileDiff, commitMessage } = vi.hoisted(() => ({
+const {
+	commitFiles,
+	fileDiff,
+	commitMessage,
+	remoteUrl,
+	commitOnRemote,
+	openUrl,
+} = vi.hoisted(() => ({
 	commitFiles: vi.fn(),
 	fileDiff: vi.fn(),
 	commitMessage: vi.fn(),
+	remoteUrl: vi.fn(),
+	commitOnRemote: vi.fn(),
+	openUrl: vi.fn(),
 }))
+
+vi.mock("@tauri-apps/plugin-opener", () => ({ openUrl }))
 
 vi.mock("../ipc/bindings", () => ({
 	commands: {
 		commitFiles,
 		fileDiff,
 		commitMessage,
+		remoteUrl,
+		commitOnRemote,
 	},
 }))
 
 beforeEach(() => {
 	resetSettings()
 	commitMessage.mockResolvedValue({ status: "ok", data: "a commit message" })
+	// A repo with no remote is the safe default for the tests that are not about
+	// remote links: it makes the items absent rather than present-but-wrong.
+	remoteUrl.mockResolvedValue({
+		status: "error",
+		error: { Spawn: "no remote" },
+	})
+	commitOnRemote.mockResolvedValue({ status: "ok", data: false })
+	openUrl.mockClear()
 })
 
 function makeCommit(hash: string): CommitSummary {
@@ -312,5 +334,89 @@ describe("CommitDetail file-row context menu", () => {
 			"the body nobody could read before",
 		)
 		expect(commitMessage).toHaveBeenCalledWith("/repo", "c1")
+	})
+})
+
+// A link to the file as it stood in this exact commit, to send to someone else.
+describe("CommitDetail remote file URL", () => {
+	const SHA = "0123456789abcdef0123456789abcdef01234567"
+	const writeText = vi.fn().mockResolvedValue(undefined)
+
+	function onGitHub(pushed: boolean) {
+		commitFiles.mockResolvedValue({
+			status: "ok",
+			data: [{ status: "M", path: "a.ts" }],
+		})
+		fileDiff.mockResolvedValue({ status: "ok", data: "" })
+		remoteUrl.mockResolvedValue({
+			status: "ok",
+			data: "git@github.com:FinshapeCZ/configurator.git",
+		})
+		commitOnRemote.mockResolvedValue({ status: "ok", data: pushed })
+	}
+
+	async function openFileMenu() {
+		const user = userEvent.setup()
+		writeText.mockClear()
+		Object.defineProperty(navigator, "clipboard", {
+			value: { writeText },
+			configurable: true,
+		})
+		render(
+			<CommitDetail
+				repoPath="/repo"
+				selectedCommit={makeCommit(SHA)}
+				onFileDiff={() => {}}
+				ignoreWhitespace={false}
+			/>,
+		)
+		const row = (await screen.findByText("a.ts")).closest("button")
+		fireEvent.contextMenu(row as Element)
+		return user
+	}
+
+	it("copies a URL pinned to the commit's sha", async () => {
+		onGitHub(true)
+		const user = await openFileMenu()
+
+		await user.click(await screen.findByText("Copy remote file URL"))
+
+		expect(writeText).toHaveBeenCalledWith(
+			`https://github.com/FinshapeCZ/configurator/blob/${SHA}/a.ts`,
+		)
+	})
+
+	it("opens the same URL in the browser", async () => {
+		onGitHub(true)
+		const user = await openFileMenu()
+
+		await user.click(await screen.findByText("Open remote file URL"))
+
+		expect(openUrl).toHaveBeenCalledWith(
+			`https://github.com/FinshapeCZ/configurator/blob/${SHA}/a.ts`,
+		)
+	})
+
+	// The link would 404 for whoever received it.
+	it("says so when the commit is not on any remote", async () => {
+		onGitHub(false)
+		await openFileMenu()
+
+		expect(
+			await screen.findByText(/Copy remote file URL \(commit not pushed\)/),
+		).toBeInTheDocument()
+	})
+
+	// No remote, or a forge with no known URL shape: offer nothing at all.
+	it("offers nothing when the repo has no usable remote", async () => {
+		commitFiles.mockResolvedValue({
+			status: "ok",
+			data: [{ status: "M", path: "a.ts" }],
+		})
+		fileDiff.mockResolvedValue({ status: "ok", data: "" })
+		await openFileMenu()
+
+		expect(screen.queryByText(/remote file URL/)).not.toBeInTheDocument()
+		expect(screen.getByText("Copy Path To Clipboard")).toBeInTheDocument()
 	})
 })

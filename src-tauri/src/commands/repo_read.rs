@@ -165,3 +165,27 @@ pub fn repo_operation(
 ) -> Result<crate::git::conflict::RepoOperation, GitError> {
 	crate::git::conflict::repo_operation(&app, &repo_path)
 }
+
+/// The configured URL of the repo's first remote (`origin` in almost every repo).
+///
+/// Returned raw, in whatever form it was cloned with — deriving a browsable web
+/// URL from it is the frontend's job, where the per-forge shapes are pure and
+/// unit-testable (`remoteFileUrl.ts`).
+#[tauri::command(async)]
+#[specta::specta]
+pub fn remote_url(app: tauri::AppHandle, repo_path: String) -> Result<String, GitError> {
+	let remote = crate::git::remote::first_remote(&app, &repo_path);
+	crate::git::remote::remote_url(&app, &repo_path, &remote)
+}
+
+/// Whether `sha` is on any remote-tracking branch — i.e. whether a web link to it
+/// would resolve for someone else, or 404 because the commit is still only local.
+#[tauri::command(async)]
+#[specta::specta]
+pub fn commit_on_remote(
+	app: tauri::AppHandle,
+	repo_path: String,
+	sha: String,
+) -> Result<bool, GitError> {
+	crate::git::remote::commit_on_remote(&app, &repo_path, &sha)
+}

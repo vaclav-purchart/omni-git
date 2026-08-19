@@ -7,13 +7,18 @@ import { CommitMessage } from "./CommitMessage"
 import { CommitRefs } from "./CommitRefs"
 import { copyPathItem } from "./copyPathItem"
 import { FileList } from "./FileList"
+import { remoteFileItems } from "./remoteFileMenu"
+import { useRemoteFile } from "./useRemoteFile"
 
 // Committed files are read-only here: the only wired action is Copy Path.
 // Everything else is scaffolded as disabled WIP so the menu shape matches the
 // design spec ahead of the write-loop work that will implement it.
-function buildFileMenu(path: string): MenuItem[] {
+function buildFileMenu(path: string, remote: MenuItem[]): MenuItem[] {
 	return [
 		copyPathItem(path),
+		// Grouped with Copy Path: both answer "give me a reference to this file",
+		// one for here and one for someone else.
+		...remote,
 		{ type: "separator" },
 		{ type: "item", label: "Log Selected…", wip: true },
 		{ type: "item", label: "Annotate Selected…", wip: true },
@@ -88,6 +93,7 @@ export function CommitDetail({
 	// re-ran this for the same commit — clearing the file list and blanking the
 	// diff, which showed up as the panel flashing after every mutation.
 	const selectedHash = selectedCommit?.hash ?? null
+	const { urlFor, pushed } = useRemoteFile(repoPath, selectedHash)
 	useEffect(() => {
 		genRef.current += 1
 		const gen = genRef.current
@@ -165,7 +171,10 @@ export function CommitDetail({
 					e.preventDefault()
 					setMenu({
 						pos: { x: e.clientX, y: e.clientY },
-						items: buildFileMenu(f.path),
+						items: buildFileMenu(
+							f.path,
+							remoteFileItems({ url: urlFor(f.path), pushed }),
+						),
 					})
 				}}
 				rootRef={filesRootRef}

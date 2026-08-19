@@ -52,6 +52,56 @@ pub fn push_args(set_upstream: bool, remote: &str) -> Vec<String> {
 }
 
 /// The remote to push a new branch to: the first one git lists, which is
+/// `git remote get-url <remote>`: the configured URL, in whatever form the user
+/// cloned with (scp-style ssh, https, ssh://). Turning that into a browsable web
+/// URL is the frontend's job — see `remoteFileUrl.ts`, where the per-forge shapes
+/// are unit-testable without a repo.
+pub fn remote_url_args(remote: &str) -> Vec<String> {
+	vec!["remote".into(), "get-url".into(), remote.to_string()]
+}
+
+/// `git branch -r --contains <sha>`: the remote-tracking branches a commit is on.
+///
+/// `-r` restricts it to remote-tracking refs, which is what decides whether a web
+/// link can resolve at all. A commit that is only local produces no output, and a
+/// URL built for it would 404 for the person it was sent to.
+pub fn remote_branches_containing_args(sha: &str) -> Vec<String> {
+	vec![
+		"branch".into(),
+		"-r".into(),
+		"--contains".into(),
+		sha.to_string(),
+	]
+}
+
+/// The configured URL of `remote`, trimmed. Errors if the remote does not exist.
+pub fn remote_url(
+	app: &tauri::AppHandle,
+	repo_path: &str,
+	remote: &str,
+) -> Result<String, GitError> {
+	let args = remote_url_args(remote);
+	let argv: Vec<&str> = args.iter().map(String::as_str).collect();
+	Ok(run(app, repo_path, &argv)?.trim().to_string())
+}
+
+/// Whether `sha` exists on any remote-tracking branch, i.e. whether a web link to
+/// it can resolve.
+pub fn commit_on_remote(
+	app: &tauri::AppHandle,
+	repo_path: &str,
+	sha: &str,
+) -> Result<bool, GitError> {
+	let args = remote_branches_containing_args(sha);
+	let argv: Vec<&str> = args.iter().map(String::as_str).collect();
+	// A sha that no longer exists at all makes git exit non-zero; that is a "no"
+	// for this question rather than an error worth surfacing.
+	Ok(match run(app, repo_path, &argv) {
+		Ok(out) => out.lines().any(|l| !l.trim().is_empty()),
+		Err(_) => false,
+	})
+}
+
 /// `origin` in almost every repo. Falls back to "origin" when there are none, so
 /// the error the user sees comes from git and names the real problem.
 pub fn first_remote(app: &tauri::AppHandle, repo_path: &str) -> String {
@@ -115,6 +165,23 @@ mod tests {
 		assert!(pull_args().contains(&"--progress".to_string()));
 		assert!(push_args(false, "origin").contains(&"--progress".to_string()));
 		assert!(push_args(true, "origin").contains(&"--progress".to_string()));
+	}
+
+	/// git is the only place the remote's URL lives, and it is what a browsable
+	/// link has to be derived from.
+	#[test]
+	fn remote_url_asks_git_for_the_configured_url() {
+		assert_eq!(remote_url_args("origin"), ["remote", "get-url", "origin"]);
+	}
+
+	/// `-r` is the whole point: only REMOTE-tracking branches count. A commit that
+	/// exists only locally has no web URL, and a link to it would 404 for whoever
+	/// it was sent to — which is the one failure worth preventing here.
+	#[test]
+	fn contains_looks_only_at_remote_branches() {
+		let args = remote_branches_containing_args("abc1234");
+
+		assert_eq!(args, ["branch", "-r", "--contains", "abc1234"]);
 	}
 
 	#[test]
