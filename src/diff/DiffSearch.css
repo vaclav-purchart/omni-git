@@ -1,0 +1,53 @@
+/* Sits in the diff header next to the path and the whitespace toggle. */
+.diff-search {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
+.diff-search-field {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+	padding: 0 6px;
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	background: var(--bg-input, var(--bg-elevated));
+}
+
+.diff-search-field:focus-within {
+	border-color: var(--accent);
+}
+
+.diff-search-icon {
+	flex: none;
+	color: var(--text-muted);
+}
+
+.diff-search-input {
+	width: 16ch;
+	min-width: 0;
+	padding: 3px 0;
+	border: none;
+	background: none;
+	color: var(--text);
+	font: inherit;
+}
+
+.diff-search-input:focus {
+	outline: none;
+}
+
+/* Fixed width so stepping through matches doesn't shift the buttons around. */
+.diff-search-count {
+	flex: none;
+	min-width: 9ch;
+	color: var(--text-muted);
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	white-space: nowrap;
+}

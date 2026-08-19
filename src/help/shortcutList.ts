@@ -124,6 +124,13 @@ export const SHORTCUTS: Shortcut[] = [
 	// Diff
 	{ keys: "↑ ↓", description: "Scroll the diff", context: "Diff" },
 	{ keys: "Backspace", description: "Back to the file list", context: "Diff" },
+	{ keys: "⌘F", description: "Find in the open diff", context: "Diff" },
+	{
+		keys: "Enter",
+		description: "Next match (Shift for previous)",
+		context: "Diff",
+	},
+	{ keys: "Esc", description: "Close the diff search", context: "Diff" },
 
 	// Commit box
 	{

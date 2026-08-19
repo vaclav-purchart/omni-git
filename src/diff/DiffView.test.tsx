@@ -199,3 +199,144 @@ describe("DiffView patch header", () => {
 		).not.toBeInTheDocument()
 	})
 })
+
+// Finding text within the open diff: ⌘F or the header's magnifier, matches
+// highlighted and scrolled to, with a count and prev/next.
+describe("DiffView search", () => {
+	const DIFF = [
+		"@@ -1,4 +1,4 @@",
+		" const foo = 1",
+		"-let food = foo",
+		"+let food = foo + 1",
+		" // FOO",
+	].join("\n")
+
+	function renderDiff() {
+		return render(
+			<DiffView
+				diff={DIFF}
+				path="src/a.ts"
+				ignoreWhitespace={false}
+				onToggleIgnoreWhitespace={() => {}}
+			/>,
+		)
+	}
+
+	it("has no search bar until asked for one", () => {
+		renderDiff()
+
+		expect(screen.queryByLabelText("Search the diff")).not.toBeInTheDocument()
+		expect(screen.getByLabelText("Find in diff")).toBeInTheDocument()
+	})
+
+	it("opens the bar from the header button", async () => {
+		renderDiff()
+
+		await userEvent.setup().click(screen.getByLabelText("Find in diff"))
+
+		expect(screen.getByLabelText("Search the diff")).toHaveFocus()
+	})
+
+	it("opens the bar on Cmd/Ctrl+F", async () => {
+		const { container } = renderDiff()
+		const root = container.querySelector(".diff-view") as Element
+
+		fireEvent.keyDown(root, { key: "f", code: "KeyF", metaKey: true })
+
+		expect(await screen.findByLabelText("Search the diff")).toHaveFocus()
+	})
+
+	// Case-insensitive, so `foo` finds `foo`, `food` twice over and `FOO`.
+	it("counts the matches as they are typed", async () => {
+		renderDiff()
+		const user = userEvent.setup()
+		await user.click(screen.getByLabelText("Find in diff"))
+
+		await user.type(screen.getByLabelText("Search the diff"), "foo")
+
+		expect(await screen.findByText(/of 6$/)).toBeInTheDocument()
+	})
+
+	it("reports a query that matches nothing", async () => {
+		renderDiff()
+		const user = userEvent.setup()
+		await user.click(screen.getByLabelText("Find in diff"))
+
+		await user.type(screen.getByLabelText("Search the diff"), "zzz")
+
+		expect(await screen.findByText("no matches")).toBeInTheDocument()
+	})
+
+	it("steps to the next match, wrapping at the end", async () => {
+		renderDiff()
+		const user = userEvent.setup()
+		await user.click(screen.getByLabelText("Find in diff"))
+		await user.type(screen.getByLabelText("Search the diff"), "food")
+		expect(await screen.findByText("1 of 2")).toBeInTheDocument()
+
+		await user.click(screen.getByLabelText("Next match"))
+		expect(await screen.findByText("2 of 2")).toBeInTheDocument()
+
+		await user.click(screen.getByLabelText("Next match"))
+		expect(await screen.findByText("1 of 2")).toBeInTheDocument()
+	})
+
+	it("steps backward, wrapping at the start", async () => {
+		renderDiff()
+		const user = userEvent.setup()
+		await user.click(screen.getByLabelText("Find in diff"))
+		await user.type(screen.getByLabelText("Search the diff"), "food")
+
+		await user.click(screen.getByLabelText("Previous match"))
+
+		expect(await screen.findByText("2 of 2")).toBeInTheDocument()
+	})
+
+	it("closes the bar and drops the query", async () => {
+		renderDiff()
+		const user = userEvent.setup()
+		await user.click(screen.getByLabelText("Find in diff"))
+		await user.type(screen.getByLabelText("Search the diff"), "foo")
+
+		await user.click(screen.getByLabelText("Close search"))
+
+		expect(screen.queryByLabelText("Search the diff")).not.toBeInTheDocument()
+		// Re-opening starts clean rather than restoring the old query.
+		await user.click(screen.getByLabelText("Find in diff"))
+		expect(screen.getByLabelText("Search the diff")).toHaveValue("")
+	})
+
+	// Backspace normally leaves the diff; while searching it must edit the query.
+	it("does not retreat on Backspace while searching", async () => {
+		const onRetreat = vi.fn()
+		render(
+			<DiffView
+				diff={DIFF}
+				path="src/a.ts"
+				ignoreWhitespace={false}
+				onToggleIgnoreWhitespace={() => {}}
+				onRetreat={onRetreat}
+			/>,
+		)
+		const user = userEvent.setup()
+		await user.click(screen.getByLabelText("Find in diff"))
+
+		await user.type(screen.getByLabelText("Search the diff"), "a{backspace}")
+
+		expect(onRetreat).not.toHaveBeenCalled()
+	})
+
+	// Nothing to search in, so the affordance would be a dead control.
+	it("offers no search button without a diff", () => {
+		render(
+			<DiffView
+				diff=""
+				path="src/a.ts"
+				ignoreWhitespace={false}
+				onToggleIgnoreWhitespace={() => {}}
+			/>,
+		)
+
+		expect(screen.queryByLabelText("Find in diff")).not.toBeInTheDocument()
+	})
+})

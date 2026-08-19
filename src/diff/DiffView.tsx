@@ -1,13 +1,21 @@
 import { EditorView } from "@codemirror/view"
-import { CaretDown, CaretRight, Paragraph, TextAa } from "@phosphor-icons/react"
+import {
+	CaretDown,
+	CaretRight,
+	MagnifyingGlass,
+	Paragraph,
+	TextAa,
+} from "@phosphor-icons/react"
 import CodeMirror, { type ReactCodeMirrorRef } from "@uiw/react-codemirror"
-import { useEffect, useMemo, useRef } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { MiddlePath } from "../ui/MiddlePath"
 import { usePersistentState } from "../ui/usePersistentState"
 import { isBinaryPatch } from "./binaryPatch"
+import { DiffSearch } from "./DiffSearch"
 import { classifyDiffLine, diffHighlighter } from "./diffHighlight"
 import { diffLineNumbers } from "./diffLineNumbers"
 import { splitPatchHeader } from "./patchHeader"
+import { findMatches, matchIndexAt, stepIndex } from "./searchMatches"
 import "./DiffView.css"
 
 // Theme built entirely from CSS custom properties, so it follows the app's
@@ -112,6 +120,66 @@ export function DiffView({
 		false,
 	)
 	const cmRef = useRef<ReactCodeMirrorRef>(null)
+	// null = the bar is closed. Separate from the query so an empty query with the
+	// bar open is distinguishable from no search at all.
+	const [query, setQuery] = useState<string | null>(null)
+	const [current, setCurrent] = useState(-1)
+
+	// Matches are computed from the SAME text the editor holds (the body, with the
+	// git preamble already split off), so offsets map straight onto its document.
+	const matches = useMemo(
+		() => (query === null ? [] : findMatches(body, query)),
+		[body, query],
+	)
+
+	// Read through a ref so `reveal` stays stable and doesn't re-run the effects
+	// below every time the match list is recomputed.
+	const matchesRef = useRef(matches)
+	matchesRef.current = matches
+
+	/** Selects a match and brings it into view; the selection is what highlights it. */
+	const reveal = useCallback((index: number) => {
+		const view = cmRef.current?.view
+		const match = matchesRef.current[index]
+		if (!view || !match) {
+			return
+		}
+		view.dispatch({
+			selection: { anchor: match.from, head: match.to },
+			// `center` rather than `nearest`: a match one line below the fold is
+			// technically visible but reads as "nothing happened".
+			effects: EditorView.scrollIntoView(match.from, { y: "center" }),
+		})
+	}, [])
+
+	// A new query re-picks the match nearest where the user already is, rather than
+	// snapping back to the top of the file on every keystroke.
+	useEffect(() => {
+		if (query === null) {
+			return
+		}
+		const from = cmRef.current?.view?.state.selection.main.from ?? 0
+		const index = matchIndexAt(matchesRef.current, from)
+		setCurrent(index)
+		if (index >= 0) {
+			reveal(index)
+		}
+	}, [query, matches, reveal])
+
+	function step(delta: number) {
+		const next = stepIndex(current, matchesRef.current.length, delta)
+		setCurrent(next)
+		if (next >= 0) {
+			reveal(next)
+		}
+	}
+
+	function closeSearch() {
+		setQuery(null)
+		setCurrent(-1)
+		// Back to the container, so the Enter/Backspace focus chain still works.
+		rootRef?.current?.focus()
+	}
 
 	// Reset scroll to the top whenever a different file/diff is shown.
 	useEffect(() => {
@@ -126,6 +194,13 @@ export function DiffView({
 	// edit; here Backspace is repurposed to return focus to the file list,
 	// and Arrow keys scroll the diff.
 	function onKeyDown(e: React.KeyboardEvent) {
+		// Before the editor check: ⌘F should open the bar whether focus is on the
+		// container or inside the diff text itself.
+		if ((e.metaKey || e.ctrlKey) && !e.altKey && e.code === "KeyF" && hasDiff) {
+			e.preventDefault()
+			setQuery((q) => q ?? "")
+			return
+		}
 		if (cmRef.current?.view?.contentDOM.contains(e.target as Node)) {
 			return
 		}
@@ -153,6 +228,28 @@ export function DiffView({
 					</>
 				) : (
 					<span className="diff-header-path diff-header-path--empty" />
+				)}
+				{hasDiff && !isBinary && query === null && (
+					<button
+						type="button"
+						className="btn btn-icon"
+						aria-label="Find in diff"
+						title="Find in diff (⌘F)"
+						onClick={() => setQuery("")}
+					>
+						<MagnifyingGlass aria-hidden="true" />
+					</button>
+				)}
+				{query !== null && (
+					<DiffSearch
+						query={query}
+						onQueryChange={setQuery}
+						matchCount={matches.length}
+						currentMatch={current + 1}
+						onPrev={() => step(-1)}
+						onNext={() => step(1)}
+						onClose={closeSearch}
+					/>
 				)}
 				<button
 					type="button"
