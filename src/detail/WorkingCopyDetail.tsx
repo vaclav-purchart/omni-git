@@ -50,6 +50,17 @@ const CONFLICTED = "Needs resolving"
 const IN_COMMIT = "Staged in this commit"
 const NOT_IN_COMMIT = "Not in this commit"
 
+/**
+ * Why `onFileDiff` fired with a path. "open" is the user choosing a file (a
+ * click, arrow keys, the row that takes over after staging). "reread" is this
+ * panel refreshing the diff of the file that was ALREADY open — after a reload
+ * or a whitespace toggle — and shows nothing new. The workspace dismisses the
+ * output panel on an open, so it must be able to tell the two apart: a hook that
+ * stashes (lint-staged) trips the watcher after a rejected commit, and the
+ * reload's re-read used to hide the hook's error ~200ms after it appeared.
+ */
+export type FileDiffCause = "open" | "reread"
+
 export function WorkingCopyDetail({
 	repoPath,
 	onFileDiff,
@@ -66,7 +77,7 @@ export function WorkingCopyDetail({
 	onRetreatFiles,
 }: {
 	repoPath: string
-	onFileDiff: (diff: string, path: string | null) => void
+	onFileDiff: (diff: string, path: string | null, cause?: FileDiffCause) => void
 	ignoreWhitespace: boolean
 	// Re-read this file with `--text` (git called it binary). Per-file, owned by
 	// the workspace.
@@ -305,21 +316,25 @@ export function WorkingCopyDetail({
 		}
 		const stillThere = sections.find(([section]) => section === key.section)
 		if (stillThere?.[1].some((f) => f.path === key.path)) {
-			void openFile(key.section, key.path)
+			void openFile(key.section, key.path, "reread")
 			return
 		}
 		const moved = sections.find(([, files]) =>
 			files.some((f) => f.path === key.path),
 		)
 		if (moved !== undefined) {
-			void openFile(moved[0], key.path)
+			void openFile(moved[0], key.path, "reread")
 			return
 		}
 		setActiveKey(null)
 		onFileDiffRef.current("", null)
 	}
 
-	async function openFile(section: WorkingSection, path: string) {
+	async function openFile(
+		section: WorkingSection,
+		path: string,
+		cause: FileDiffCause = "open",
+	) {
 		const gen = genRef.current
 		reqRef.current += 1
 		const req = reqRef.current
@@ -346,10 +361,10 @@ export function WorkingCopyDetail({
 					? r.error.NonZero.stderr
 					: `Could not load the diff for ${path}`,
 			)
-			onFileDiffRef.current("", path)
+			onFileDiffRef.current("", path, cause)
 			return
 		}
-		onFileDiffRef.current(r.data, path)
+		onFileDiffRef.current(r.data, path, cause)
 	}
 
 	/**
@@ -509,7 +524,7 @@ export function WorkingCopyDetail({
 	// Re-fetch the open file's diff when the whitespace mode flips.
 	useEffect(() => {
 		if (activeKey !== null) {
-			void openFile(activeKey.section, activeKey.path)
+			void openFile(activeKey.section, activeKey.path, "reread")
 		}
 	}, [ignoreWhitespace, forceText])
 
