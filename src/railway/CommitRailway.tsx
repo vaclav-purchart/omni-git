@@ -197,6 +197,7 @@ export function CommitRailway({
 	onReword,
 	onCherryPick,
 	refActions,
+	onSelectionChange,
 }: {
 	repoPath: string
 	all: boolean
@@ -224,6 +225,9 @@ export function CommitRailway({
 	// that ref, so checking out a branch you can already see doesn't mean going
 	// to find it in the sidebar first.
 	refActions?: RefActions
+	// Newest-first, and only when more than one is picked. The detail panel shows
+	// their combined changes.
+	onSelectionChange?: (hashes: string[]) => void
 }) {
 	const { commits, loadMore, reload, reachedEnd, error } = useCommits(
 		repoPath,
@@ -403,6 +407,17 @@ export function CommitRailway({
 
 	const loadedHashes = useMemo(() => commits.map((c) => c.hash), [commits])
 	const multiSelection = orderedSelection(loadedHashes, selectedHashes)
+
+	// Reported through a ref-stable effect keyed on the JOINED hashes: the array
+	// itself is rebuilt every render, so depending on it would fire continuously.
+	const selectionKey = multiSelection.join(",")
+	const onSelectionChangeRef = useRef(onSelectionChange)
+	onSelectionChangeRef.current = onSelectionChange
+	useEffect(() => {
+		onSelectionChangeRef.current?.(
+			selectionKey === "" ? [] : selectionKey.split(","),
+		)
+	}, [selectionKey])
 	// One commit selected is just the active row by another name.
 	const hasMultiSelection = multiSelection.length > 1
 

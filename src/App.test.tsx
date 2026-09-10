@@ -150,6 +150,13 @@ vi.mock("./ipc/bindings", () => ({
 			data: { ok: true, sha: "c9", output: "" },
 		}),
 		reset: vi.fn().mockResolvedValue({ status: "ok", data: true }),
+		commitsFiles: vi.fn().mockResolvedValue({
+			status: "ok",
+			data: [{ status: "M", path: "combined.rs" }],
+		}),
+		commitsFileDiff: vi
+			.fn()
+			.mockResolvedValue({ status: "ok", data: "@@ combined @@" }),
 		commitFiles: vi.fn().mockResolvedValue({
 			status: "ok",
 			data: [{ status: "M", path: "main.rs" }],
@@ -2068,6 +2075,111 @@ describe("the toolbar", () => {
 			"/code/omni-git",
 			{ kind: "Create", name: "feat/x", start_point: "HEAD", checkout: true },
 			expect.any(String),
+		)
+	})
+})
+
+// Selecting three commits and being shown one is not a selection.
+describe("multi-commit changes", () => {
+	const LOG = ["c1", "c2", "c3"].map((hash, i) => ({
+		hash,
+		parents: i === 0 ? [] : [`c${i}`],
+		author_name: "A",
+		author_email: "a@x",
+		timestamp_ms: 0,
+		refs: [],
+		subject: `subject ${hash}`,
+	}))
+
+	beforeEach(() => {
+		resetSettings()
+		setSetting(
+			"last-repo",
+			JSON.stringify({ id: "1", name: "omni-git", path: "/code/omni-git" }),
+		)
+		vi.mocked(commands.commitsFiles).mockClear()
+		vi.mocked(commands.commitsFileDiff).mockClear()
+		vi.mocked(commands.logCommits).mockResolvedValue({
+			status: "ok",
+			data: LOG,
+		} as Awaited<ReturnType<typeof commands.logCommits>>)
+	})
+
+	afterEach(restoreDefaultLog)
+
+	function row(hash: string) {
+		return screen
+			.getAllByText(`subject ${hash}`)
+			.map((el) => el.closest("button"))
+			.find((b) => b?.className.includes("commit-row")) as HTMLElement
+	}
+
+	async function selectRange(from: string, to: string) {
+		render(<App />)
+		const user = userEvent.setup()
+		await screen.findAllByText(`subject ${from}`)
+		await user.click(row(from))
+		fireEvent.click(row(to), { shiftKey: true })
+		return user
+	}
+
+	it("lists the files of every selected commit", async () => {
+		await selectRange("c1", "c3")
+
+		await waitFor(() =>
+			expect(commands.commitsFiles).toHaveBeenCalledWith("/code/omni-git", [
+				"c1",
+				"c2",
+				"c3",
+			]),
+		)
+		expect(await screen.findByText("combined.rs")).toBeInTheDocument()
+	})
+
+	it("says how many commits it is showing", async () => {
+		await selectRange("c1", "c3")
+
+		expect(
+			await screen.findByText(/3 commits selected — combined changes/),
+		).toBeInTheDocument()
+	})
+
+	it("loads the combined diff for a file", async () => {
+		const user = await selectRange("c1", "c3")
+
+		await user.click(await screen.findByText("combined.rs"))
+
+		expect(commands.commitsFileDiff).toHaveBeenCalledWith(
+			"/code/omni-git",
+			["c1", "c2", "c3"],
+			"combined.rs",
+			false,
+			false,
+		)
+	})
+
+	// One row selected is just the active commit; the combined path would be extra
+	// git calls for the same answer.
+	it("uses the single-commit path for one commit", async () => {
+		render(<App />)
+		await screen.findAllByText("subject c2")
+		await userEvent.click(row("c2"))
+
+		await waitFor(() =>
+			expect(commands.commitFiles).toHaveBeenCalledWith("/code/omni-git", "c2"),
+		)
+		expect(commands.commitsFiles).not.toHaveBeenCalled()
+	})
+
+	// A message and a ref belong to ONE commit; showing one of several would
+	// misattribute it.
+	it("hides the single-commit message panel for a selection", async () => {
+		await selectRange("c1", "c3")
+		await screen.findByText(/3 commits selected/)
+
+		expect(commands.commitMessage).not.toHaveBeenCalledWith(
+			"/code/omni-git",
+			"c3",
 		)
 	})
 })
