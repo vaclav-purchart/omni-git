@@ -5,6 +5,7 @@ import {
 	X,
 } from "@phosphor-icons/react"
 import { useEffect, useRef } from "react"
+import { AnsiText } from "./AnsiText"
 import "./CommandOutput.css"
 
 export type CommandResult = {
@@ -98,15 +99,21 @@ export function CommandOutput({
 				</button>
 			</div>
 			{/* Selectable so error text can be copied out; `pre` keeps the
-			    command's own alignment (hook output is often columnar). */}
+			    command's own alignment (hook output is often columnar). Hooks
+			    write for a terminal, colours and all — `AnsiText` keeps the
+			    colours and drops the rest of the escape codes. */}
 			<pre ref={bodyRef} className="cmdout-body" aria-label="Command output">
-				{result.output === ""
-					? running
-						? "Waiting for output…"
-						: result.status === "ok"
-							? "Done."
-							: "The command failed without producing any output."
-					: result.output}
+				{result.output === "" ? (
+					running ? (
+						"Waiting for output…"
+					) : result.status === "ok" ? (
+						"Done."
+					) : (
+						"The command failed without producing any output."
+					)
+				) : (
+					<AnsiText text={result.output} />
+				)}
 			</pre>
 		</div>
 	)

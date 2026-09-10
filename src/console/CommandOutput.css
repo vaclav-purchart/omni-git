@@ -109,3 +109,156 @@
 	white-space: pre;
 	user-select: text;
 }
+
+/*
+ * The 16 ANSI colours, as `AnsiText` emits them. Tuned per theme: a terminal's
+ * pure red/yellow/blue are unreadable on a light panel, and dim grey has to
+ * stay legible on both grounds. Bright variants lean lighter in dark mode and
+ * only slightly in light mode, the way most terminal themes do.
+ */
+.cmdout-body {
+	--ansi-black: #3b4048;
+	--ansi-red: #c0392b;
+	--ansi-green: #1a7f37;
+	--ansi-yellow: #9a6700;
+	--ansi-blue: #2563eb;
+	--ansi-magenta: #8250df;
+	--ansi-cyan: #0e7490;
+	--ansi-white: #6e7781;
+	--ansi-bright-black: #8c959f;
+	--ansi-bright-red: #d1242f;
+	--ansi-bright-green: #2da44e;
+	--ansi-bright-yellow: #bf8700;
+	--ansi-bright-blue: #3b82f6;
+	--ansi-bright-magenta: #a475f9;
+	--ansi-bright-cyan: #1b9aaa;
+	--ansi-bright-white: #1a1d21;
+}
+:root[data-theme="dark"] .cmdout-body {
+	--ansi-black: #4b5159;
+	--ansi-red: #f47067;
+	--ansi-green: #57ab5a;
+	--ansi-yellow: #c69026;
+	--ansi-blue: #6cb6ff;
+	--ansi-magenta: #dcbdfb;
+	--ansi-cyan: #56d4dd;
+	--ansi-white: #adbac7;
+	--ansi-bright-black: #768390;
+	--ansi-bright-red: #ff938a;
+	--ansi-bright-green: #6bc46d;
+	--ansi-bright-yellow: #daaa3f;
+	--ansi-bright-blue: #96d0ff;
+	--ansi-bright-magenta: #eed6ff;
+	--ansi-bright-cyan: #6ee7ee;
+	--ansi-bright-white: #e7e9ec;
+}
+.ansi-fg-black {
+	color: var(--ansi-black);
+}
+.ansi-fg-red {
+	color: var(--ansi-red);
+}
+.ansi-fg-green {
+	color: var(--ansi-green);
+}
+.ansi-fg-yellow {
+	color: var(--ansi-yellow);
+}
+.ansi-fg-blue {
+	color: var(--ansi-blue);
+}
+.ansi-fg-magenta {
+	color: var(--ansi-magenta);
+}
+.ansi-fg-cyan {
+	color: var(--ansi-cyan);
+}
+.ansi-fg-white {
+	color: var(--ansi-white);
+}
+.ansi-fg-bright-black {
+	color: var(--ansi-bright-black);
+}
+.ansi-fg-bright-red {
+	color: var(--ansi-bright-red);
+}
+.ansi-fg-bright-green {
+	color: var(--ansi-bright-green);
+}
+.ansi-fg-bright-yellow {
+	color: var(--ansi-bright-yellow);
+}
+.ansi-fg-bright-blue {
+	color: var(--ansi-bright-blue);
+}
+.ansi-fg-bright-magenta {
+	color: var(--ansi-bright-magenta);
+}
+.ansi-fg-bright-cyan {
+	color: var(--ansi-bright-cyan);
+}
+.ansi-fg-bright-white {
+	color: var(--ansi-bright-white);
+}
+/* A coloured background is a badge (vitest's " FAIL "); the text on it is
+   whatever the tool set, which for badges is bright white or black. */
+.ansi-bg-black {
+	background: var(--ansi-black);
+}
+.ansi-bg-red {
+	background: var(--ansi-red);
+}
+.ansi-bg-green {
+	background: var(--ansi-green);
+}
+.ansi-bg-yellow {
+	background: var(--ansi-yellow);
+}
+.ansi-bg-blue {
+	background: var(--ansi-blue);
+}
+.ansi-bg-magenta {
+	background: var(--ansi-magenta);
+}
+.ansi-bg-cyan {
+	background: var(--ansi-cyan);
+}
+.ansi-bg-white {
+	background: var(--ansi-white);
+}
+.ansi-bg-bright-black {
+	background: var(--ansi-bright-black);
+}
+.ansi-bg-bright-red {
+	background: var(--ansi-bright-red);
+}
+.ansi-bg-bright-green {
+	background: var(--ansi-bright-green);
+}
+.ansi-bg-bright-yellow {
+	background: var(--ansi-bright-yellow);
+}
+.ansi-bg-bright-blue {
+	background: var(--ansi-bright-blue);
+}
+.ansi-bg-bright-magenta {
+	background: var(--ansi-bright-magenta);
+}
+.ansi-bg-bright-cyan {
+	background: var(--ansi-bright-cyan);
+}
+.ansi-bg-bright-white {
+	background: var(--ansi-bright-white);
+}
+.ansi-bold {
+	font-weight: 700;
+}
+.ansi-dim {
+	opacity: 0.6;
+}
+.ansi-italic {
+	font-style: italic;
+}
+.ansi-underline {
+	text-decoration: underline;
+}

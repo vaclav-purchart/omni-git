@@ -122,3 +122,26 @@ describe("CommandOutput", () => {
 		expect(container.querySelector(".cmdout")).toHaveClass(className)
 	})
 })
+
+// Hook output is what a terminal would have shown, escape codes included:
+// vitest colours its FAIL badges, lint-staged hides the cursor around its
+// spinner. Rendered raw, each ESC byte showed up as a box glyph and the
+// `[31m` after it as noise — which is what a user saw when a pre-commit hook
+// failed on 85 suites.
+describe("CommandOutput colours", () => {
+	const ESC = "\u001b"
+
+	it("renders ANSI colours instead of showing the escape codes", () => {
+		renderOutput({
+			title: "Commit rejected",
+			output: `${ESC}[?25l${ESC}[1m${ESC}[31mFAIL${ESC}[0m src/a.spec.ts`,
+			status: "error",
+		})
+
+		const body = screen.getByLabelText("Command output")
+		expect(body.textContent).toBe("FAIL src/a.spec.ts")
+		const fail = screen.getByText("FAIL")
+		expect(fail).toHaveClass("ansi-fg-red")
+		expect(fail).toHaveClass("ansi-bold")
+	})
+})
