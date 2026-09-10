@@ -26,7 +26,10 @@ import { useGitConsole } from "../console/useGitConsole"
 import { CommitDetail } from "../detail/CommitDetail"
 import { CompareDetail } from "../detail/CompareDetail"
 import { StashDetail } from "../detail/StashDetail"
-import { WorkingCopyDetail } from "../detail/WorkingCopyDetail"
+import {
+	type FileDiffCause,
+	WorkingCopyDetail,
+} from "../detail/WorkingCopyDetail"
 import { DiffView } from "../diff/DiffView"
 import { HelpOverlay } from "../help/HelpOverlay"
 import {
@@ -755,13 +758,18 @@ export function Workspace({
 	}
 
 	// Stable identity so CommitDetail's load effect isn't re-triggered per render.
-	// `p !== null` means a FILE was opened, which is new content for this panel.
-	// A null path is a panel resetting (a commit selection clearing its diff), and
-	// must not dismiss output — otherwise committing would instantly hide its own
-	// result, since a successful commit selects the new commit programmatically.
+	// Only a file the user OPENED dismisses finished output: that is new content
+	// for this panel. Two other calls must not:
+	// - A null path is a panel resetting (a commit selection clearing its diff);
+	//   otherwise committing would instantly hide its own result, since a
+	//   successful commit selects the new commit programmatically.
+	// - A "reread" is the working panel refreshing the diff of the file that was
+	//   already open after a reload. A hook that stashes (lint-staged) trips the
+	//   watcher right after rejecting a commit, and that re-read used to close
+	//   the hook's error ~200ms after it appeared.
 	const handleFileDiff = useCallback(
-		(d: string, p: string | null) => {
-			if (p !== null) {
+		(d: string, p: string | null, cause: FileDiffCause = "open") => {
+			if (p !== null && cause === "open") {
 				dismissOutput()
 			}
 			setDiff(d)

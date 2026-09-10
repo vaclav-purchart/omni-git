@@ -171,7 +171,11 @@ describe("WorkingCopyDetail", () => {
 			false,
 			false,
 		)
-		expect(onFileDiff).toHaveBeenLastCalledWith("diff:staged", "staged.txt")
+		expect(onFileDiff).toHaveBeenLastCalledWith(
+			"diff:staged",
+			"staged.txt",
+			"open",
+		)
 	})
 })
 
@@ -286,6 +290,7 @@ describe("WorkingCopyDetail partially-staged (dual-key) handling", () => {
 		expect(onFileDiff).toHaveBeenLastCalledWith(
 			"diff:Staged:same.txt",
 			"same.txt",
+			"open",
 		)
 		expect(stagedRow.className).toContain("is-active")
 		expect(unstagedRow.className).not.toContain("is-active")
@@ -304,6 +309,7 @@ describe("WorkingCopyDetail partially-staged (dual-key) handling", () => {
 		expect(onFileDiff).toHaveBeenLastCalledWith(
 			"diff:Unstaged:same.txt",
 			"same.txt",
+			"open",
 		)
 		expect(unstagedRow.className).toContain("is-active")
 		expect(stagedRow.className).not.toContain("is-active")
@@ -344,7 +350,11 @@ describe("WorkingCopyDetail keyboard navigation across sections", () => {
 		// First ArrowDown (nothing selected) -> first file (Staged).
 		fireEvent.keyDown(list, { key: "ArrowDown" })
 		await waitFor(() =>
-			expect(onFileDiff).toHaveBeenLastCalledWith("diff:Staged:s.txt", "s.txt"),
+			expect(onFileDiff).toHaveBeenLastCalledWith(
+				"diff:Staged:s.txt",
+				"s.txt",
+				"open",
+			),
 		)
 
 		// ArrowDown -> Unstaged.
@@ -353,6 +363,7 @@ describe("WorkingCopyDetail keyboard navigation across sections", () => {
 			expect(onFileDiff).toHaveBeenLastCalledWith(
 				"diff:Unstaged:u.txt",
 				"u.txt",
+				"open",
 			),
 		)
 
@@ -362,6 +373,7 @@ describe("WorkingCopyDetail keyboard navigation across sections", () => {
 			expect(onFileDiff).toHaveBeenLastCalledWith(
 				"diff:Untracked:t.txt",
 				"t.txt",
+				"open",
 			),
 		)
 
@@ -371,6 +383,7 @@ describe("WorkingCopyDetail keyboard navigation across sections", () => {
 			expect(onFileDiff).toHaveBeenLastCalledWith(
 				"diff:Untracked:t.txt",
 				"t.txt",
+				"open",
 			),
 		)
 
@@ -380,19 +393,28 @@ describe("WorkingCopyDetail keyboard navigation across sections", () => {
 			expect(onFileDiff).toHaveBeenLastCalledWith(
 				"diff:Unstaged:u.txt",
 				"u.txt",
+				"open",
 			),
 		)
 
 		// ArrowUp -> back to Staged.
 		fireEvent.keyDown(list, { key: "ArrowUp" })
 		await waitFor(() =>
-			expect(onFileDiff).toHaveBeenLastCalledWith("diff:Staged:s.txt", "s.txt"),
+			expect(onFileDiff).toHaveBeenLastCalledWith(
+				"diff:Staged:s.txt",
+				"s.txt",
+				"open",
+			),
 		)
 
 		// ArrowUp again at the first file -> clamps, stays on Staged.
 		fireEvent.keyDown(list, { key: "ArrowUp" })
 		await waitFor(() =>
-			expect(onFileDiff).toHaveBeenLastCalledWith("diff:Staged:s.txt", "s.txt"),
+			expect(onFileDiff).toHaveBeenLastCalledWith(
+				"diff:Staged:s.txt",
+				"s.txt",
+				"open",
+			),
 		)
 	})
 })
@@ -1114,6 +1136,45 @@ describe("WorkingCopyDetail in-place reload", () => {
 			expect(screen.getByText("Staged in this commit")).toBeInTheDocument(),
 		)
 		expect(screen.getByText("a.ts")).toBeInTheDocument()
+	})
+
+	// A hook that stashes (lint-staged) trips the watcher after a rejected
+	// commit, and the reload re-reads the open file. The workspace dismisses the
+	// output panel when a file is OPENED — so the re-read has to say it isn't
+	// one, or the hook's error vanished ~200ms after it appeared.
+	it("reports a reload's re-read of the open file as a re-read, not an open", async () => {
+		workingStatus.mockResolvedValue(
+			statusOf([], [{ status: "M", path: "a.ts" }]),
+		)
+		workingFileDiff.mockResolvedValue({ status: "ok", data: "diff" })
+		const onFileDiff = vi.fn()
+		const { rerender } = render(
+			<WorkingCopyDetail
+				repoPath="/repo"
+				onFileDiff={onFileDiff}
+				ignoreWhitespace={false}
+				onMutated={vi.fn()}
+				reloadToken={0}
+			/>,
+		)
+		fireEvent.click(await screen.findByText("a.ts"))
+		await waitFor(() =>
+			expect(onFileDiff).toHaveBeenLastCalledWith("diff", "a.ts", "open"),
+		)
+
+		rerender(
+			<WorkingCopyDetail
+				repoPath="/repo"
+				onFileDiff={onFileDiff}
+				ignoreWhitespace={false}
+				onMutated={vi.fn()}
+				reloadToken={1}
+			/>,
+		)
+		await waitFor(() => expect(workingFileDiff).toHaveBeenCalledTimes(2))
+		await waitFor(() =>
+			expect(onFileDiff).toHaveBeenLastCalledWith("diff", "a.ts", "reread"),
+		)
 	})
 
 	// Switching repo is different: that data belongs to another repo and must go.
@@ -2095,6 +2156,7 @@ describe("WorkingCopyDetail conflicted files", () => {
 		expect(onFileDiff).toHaveBeenLastCalledWith(
 			"diff --cc f.tsx\n@@@ -1,3 -1,3 +1,7 @@@",
 			"f.tsx",
+			"open",
 		)
 	})
 
