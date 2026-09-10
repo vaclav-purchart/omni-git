@@ -189,3 +189,36 @@ pub fn commit_on_remote(
 ) -> Result<bool, GitError> {
 	crate::git::remote::commit_on_remote(&app, &repo_path, &sha)
 }
+
+/// The union of files touched by several selected commits.
+#[tauri::command(async)]
+#[specta::specta]
+pub fn commits_files(
+	app: tauri::AppHandle,
+	repo_path: String,
+	commits: Vec<String>,
+) -> Result<Vec<crate::git::changes::FileChange>, GitError> {
+	crate::git::multi_commit::commits_files(&app, &repo_path, &commits)
+}
+
+/// Each selected commit's patch for one file, oldest first — see
+/// `git::multi_commit` for why this is not a range diff.
+#[tauri::command(async)]
+#[specta::specta]
+pub fn commits_file_diff(
+	app: tauri::AppHandle,
+	repo_path: String,
+	commits: Vec<String>,
+	path: String,
+	ignore_whitespace: bool,
+	force_text: bool,
+) -> Result<String, GitError> {
+	crate::git::multi_commit::commits_file_diff(
+		&app,
+		&repo_path,
+		&commits,
+		&path,
+		ignore_whitespace,
+		force_text,
+	)
+}

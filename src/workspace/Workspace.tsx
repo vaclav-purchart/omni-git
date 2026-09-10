@@ -89,6 +89,9 @@ export function Workspace({
 }) {
 	const [selected, setSelected] = useState<CommitSummary | null>(null)
 	const [selectHash, setSelectHash] = useState<string | null>(null)
+	// Every commit currently selected in the railway, newest-first. Drives the
+	// detail panel when it holds more than one.
+	const [selectedCommits, setSelectedCommits] = useState<string[]>([])
 	const [diff, setDiff] = useState("")
 	const [diffPath, setDiffPath] = useState<string | null>(null)
 	// "Show as text" applies to ONE file, so it's stored as that file's path
@@ -1046,6 +1049,7 @@ export function Workspace({
 								onCreateBranch={(startPoint) => setPrompt({ startPoint })}
 								onReset={(hash) => setResetTo(hash)}
 								onReword={openReword}
+								onSelectionChange={setSelectedCommits}
 								onCherryPick={(hashes) => {
 									dismissOutput()
 									setCherryPick(hashes)
@@ -1149,6 +1153,7 @@ export function Workspace({
 											<CommitDetail
 												repoPath={repo.path}
 												selectedCommit={selected}
+												selectedHashes={selectedCommits}
 												refActions={refActions}
 												onFileDiff={handleFileDiff}
 												ignoreWhitespace={ignoreWhitespace}

@@ -36,6 +36,7 @@ function buildFileMenu(path: string, remote: MenuItem[]): MenuItem[] {
 export function CommitDetail({
 	repoPath,
 	selectedCommit,
+	selectedHashes,
 	onFileDiff,
 	ignoreWhitespace,
 	forceText = false,
@@ -46,6 +47,12 @@ export function CommitDetail({
 }: {
 	repoPath: string
 	selectedCommit: CommitSummary | null
+	/**
+	 * Every selected commit, newest-first, when more than one is picked. The panel
+	 * then shows the combined changes rather than only the last row clicked —
+	 * selecting three commits and being shown one is not a selection.
+	 */
+	selectedHashes?: string[]
 	onFileDiff: (diff: string, path: string | null) => void
 	ignoreWhitespace: boolean
 	// Re-read this file with `--text` (git called it binary). Per-file, owned by
@@ -93,17 +100,32 @@ export function CommitDetail({
 	// re-ran this for the same commit — clearing the file list and blanking the
 	// diff, which showed up as the panel flashing after every mutation.
 	const selectedHash = selectedCommit?.hash ?? null
-	const { urlFor, pushed } = useRemoteFile(repoPath, selectedHash)
+	// One row selected is just the active commit by another name; the multi-commit
+	// path only earns its extra git calls past that.
+	const multi = (selectedHashes?.length ?? 0) > 1
+	const hashes = multi ? (selectedHashes as string[]) : []
+	// A stable primitive for the effects to key on: `selectedHashes` is a fresh
+	// array on every render, and depending on it would re-fetch continuously.
+	const selectionKey = multi ? hashes.join(",") : (selectedHash ?? "")
+	// Linking a file to a forge only makes sense for ONE commit — with several
+	// there is no single revision the line numbers belong to.
+	const { urlFor, pushed } = useRemoteFile(
+		repoPath,
+		multi ? null : selectedHash,
+	)
 	useEffect(() => {
 		genRef.current += 1
 		const gen = genRef.current
 		setActivePath(null)
 		setFiles([])
 		onFileDiffRef.current("", null)
-		if (selectedHash === null) {
+		if (selectionKey === "") {
 			return
 		}
-		commands.commitFiles(repoPath, selectedHash).then((r) => {
+		const load = multi
+			? commands.commitsFiles(repoPath, hashes)
+			: commands.commitFiles(repoPath, selectedHash as string)
+		load.then((r) => {
 			if (genRef.current !== gen) {
 				return
 			}
@@ -111,7 +133,9 @@ export function CommitDetail({
 				setFiles(r.data)
 			}
 		})
-	}, [repoPath, selectedHash])
+		// `hashes`/`multi` are derived from selectionKey, so keying on it alone is
+		// both sufficient and stable.
+	}, [repoPath, selectionKey])
 
 	async function openFile(path: string) {
 		if (selectedCommit === null) {
@@ -121,13 +145,21 @@ export function CommitDetail({
 		reqRef.current += 1
 		const req = reqRef.current
 		setActivePath(path)
-		const r = await commands.fileDiff(
-			repoPath,
-			selectedCommit.hash,
-			path,
-			ignoreWhitespace,
-			forceText,
-		)
+		const r = multi
+			? await commands.commitsFileDiff(
+					repoPath,
+					hashes,
+					path,
+					ignoreWhitespace,
+					forceText,
+				)
+			: await commands.fileDiff(
+					repoPath,
+					selectedCommit.hash,
+					path,
+					ignoreWhitespace,
+					forceText,
+				)
 		if (genRef.current !== gen || reqRef.current !== req) {
 			return
 		}
@@ -151,17 +183,23 @@ export function CommitDetail({
 	}
 	return (
 		<div className="detail-root">
-			<CommitRefs
-				refs={selectedCommit.refs}
-				hash={selectedCommit.hash}
-				actions={refActions}
-				onOpenMenu={(items, e) =>
-					setMenu({ pos: { x: e.clientX, y: e.clientY }, items })
-				}
-			/>
+			{!multi && (
+				<CommitRefs
+					refs={selectedCommit.refs}
+					hash={selectedCommit.hash}
+					actions={refActions}
+					onOpenMenu={(items, e) =>
+						setMenu({ pos: { x: e.clientX, y: e.clientY }, items })
+					}
+				/>
+			)}
 			<FileList
 				ariaLabel="Changed files"
-				subject={selectedCommit.subject}
+				subject={
+					multi
+						? `${hashes.length} commits selected — combined changes`
+						: selectedCommit.subject
+				}
 				sections={[{ key: "changed", files }]}
 				activeKey={
 					activePath === null ? null : { section: "changed", path: activePath }
@@ -181,11 +219,15 @@ export function CommitDetail({
 				onAdvance={onAdvanceFiles}
 				onRetreat={onRetreatFiles}
 			/>
-			<CommitMessage
-				repoPath={repoPath}
-				hash={selectedCommit.hash}
-				subject={selectedCommit.subject}
-			/>
+			{!multi && (
+				// One message per commit; with several selected there is no single
+				// message to show, and picking one of them would misattribute it.
+				<CommitMessage
+					repoPath={repoPath}
+					hash={selectedCommit.hash}
+					subject={selectedCommit.subject}
+				/>
+			)}
 			{menu && (
 				<ContextMenu
 					items={menu.items}

@@ -8,6 +8,7 @@ pub mod conflict;
 pub mod env;
 pub mod log;
 pub mod merge;
+pub mod multi_commit;
 pub mod palette;
 pub mod refs;
 pub mod remote;
